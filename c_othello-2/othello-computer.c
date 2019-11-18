@@ -38,13 +38,13 @@ void main()
   int a;
   int b;
 
-   printf("\nREVERSI\n\n");
-  printf("You can go first on the first game, then we will take turns.\n");
-  printf("   You will be white - (O)\n   I will be black   - (@).\n");
-  printf("Select a square for your move by typing a digit for the row\n "
-    "and a letter for the column with no spaces between.\n");
-  printf("\nGood luck!  Press Enter to start.\n");
-  scanf("%c", &again);
+//    printf("\nREVERSI\n\n");
+//   printf("You can go first on the first game, then we will take turns.\n");
+//   printf("   You will be white - (O)\n   I will be black   - (@).\n");
+//   printf("Select a square for your move by typing a digit for the row\n "
+//     "and a letter for the column with no spaces between.\n");
+//   printf("\nGood luck!  Press Enter to start.\n");
+//   scanf("%c", &again);
 
    /* Prompt for how to play - as before */
 
@@ -85,7 +85,7 @@ void main()
                  }
                }
              fflush(stdin);              /* Flush the keyboard buffer */
-             printf("Please enter your move (row column): "); 
+            //  printf("Please enter your move (row column): "); 
              scanf("%d%c", &x, &y);              /* Read input        */
              y = tolower(y) - 'a';         /* Convert to column index */
              x--;                          /* Convert to row index    */
@@ -166,79 +166,79 @@ void main()
  * letters to identify squares.                *
  * Parameter is the board array.               *
  ***********************************************/
-void display(char board[][SIZE])
-{
-   int row  = 0;          /* Row index      */
-   int col = 0;           /* Column index   */
-   char col_label = 'a';  /* Column label   */
-
-   printf("\n ");         /* Start top line */
-   for(col = 0 ; col<SIZE ;col++)
-     printf("   %c", col_label+col); /* Display the top line */
-   printf("\n");                     /* End the top line     */
-
-   /* Display the intermediate rows */  
-   for(row = 0; row < SIZE; row++)
-   {
-     printf("  +");
-     for(col = 0; col<SIZE; col++)
-       printf("---+");
-     printf("\n%2d|",row + 1); 
-
-     for(col = 0; col<SIZE; col++)
-       printf(" %c |", board[row][col]);  /* Display counters in row */
-      // printf(" %c", board[row][col]);  /* Display counters in row */
-     printf("\n");    
-   }
-
-  //  printf("  +");                  /* Start the bottom line   */
-  //  for(col = 0 ; col<SIZE ;col++)
-  //    printf("---+");               /* Display the bottom line */
-  //  printf("\n");                   /* End the bottom  line    */
-}
-
 // void display(char board[][SIZE])
 // {
 //    int row  = 0;          /* Row index      */
 //    int col = 0;           /* Column index   */
 //    char col_label = 'a';  /* Column label   */
 
-//   //  printf("\n ");         /* Start top line */
-//   //  for(col = 0 ; col<SIZE ;col++)
-//   //    printf("   %c", col_label+col); /* Display the top line */
-//   //  printf("\n");                     /* End the top line     */
+//    printf("\n ");         /* Start top line */
+//    for(col = 0 ; col<SIZE ;col++)
+//      printf("   %c", col_label+col); /* Display the top line */
+//    printf("\n");                     /* End the top line     */
 
 //    /* Display the intermediate rows */  
 //    for(row = 0; row < SIZE; row++)
 //    {
-//     //  printf("  +");
-//     //  for(col = 0; col<SIZE; col++)
-//     //    printf("---+");
-//     //  printf("\n%2d|",row + 1); 
+//      printf("  +");
+//      for(col = 0; col<SIZE; col++)
+//        printf("---+");
+//      printf("\n%2d|",row + 1); 
 
 //      for(col = 0; col<SIZE; col++)
-//      {
-//       if (board[row][col] == ' '){
-//         printf("0");
-//       }
-//       if (board[row][col] == 79){
-//         printf("1");
-//       }
-//       if (board[row][col] == 64){
-//         printf("2");
-//       }
-//        /* Display counters in row */
+//        printf(" %c |", board[row][col]);  /* Display counters in row */
 //       // printf(" %c", board[row][col]);  /* Display counters in row */
-//     //  printf("\n");    
-//      }
+//      printf("\n");    
 //    }
-//    printf("\n");
 
 //   //  printf("  +");                  /* Start the bottom line   */
 //   //  for(col = 0 ; col<SIZE ;col++)
 //   //    printf("---+");               /* Display the bottom line */
 //   //  printf("\n");                   /* End the bottom  line    */
 // }
+
+void display(char board[][SIZE])
+{
+   int row  = 0;          /* Row index      */
+   int col = 0;           /* Column index   */
+   char col_label = 'a';  /* Column label   */
+
+  //  printf("\n ");         /* Start top line */
+  //  for(col = 0 ; col<SIZE ;col++)
+  //    printf("   %c", col_label+col); /* Display the top line */
+  //  printf("\n");                     /* End the top line     */
+
+   /* Display the intermediate rows */  
+   for(row = 0; row < SIZE; row++)
+   {
+    //  printf("  +");
+    //  for(col = 0; col<SIZE; col++)
+    //    printf("---+");
+    //  printf("\n%2d|",row + 1); 
+
+     for(col = 0; col<SIZE; col++)
+     {
+      if (board[row][col] == ' '){
+        printf("0");
+      }
+      if (board[row][col] == 79){
+        printf("1");
+      }
+      if (board[row][col] == 64){
+        printf("2");
+      }
+       /* Display counters in row */
+      // printf(" %c", board[row][col]);  /* Display counters in row */
+    //  printf("\n");    
+     }
+   }
+   printf("\n");
+
+  //  printf("  +");                  /* Start the bottom line   */
+  //  for(col = 0 ; col<SIZE ;col++)
+  //    printf("---+");               /* Display the bottom line */
+  //  printf("\n");                   /* End the bottom  line    */
+}
 
 /***********************************************
 /* Calculates which squares are valid moves    *
