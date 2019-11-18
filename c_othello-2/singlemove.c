@@ -37,6 +37,7 @@ void main()
   int player = 0;                   /* Player indicator    */
   int a;
   int b;
+  int over = 0;
 
 //    printf("\nREVERSI\n\n");
 //   printf("You can go first on the first game, then we will take turns.\n");
@@ -54,21 +55,21 @@ void main()
      player = ++no_of_games % 2; 
      no_of_moves = 4;                /* Starts with four counters */
 
-     /* Blank all the board squares */    
-     for(row = 0; row < SIZE; row++)
-       for(col = 0; col < SIZE; col++)
-         board[row][col] = ' ';
+    //  /* Blank all the board squares */    
+    //  for(row = 0; row < SIZE; row++)
+    //    for(col = 0; col < SIZE; col++)
+    //      board[row][col] = ' ';
 
-     /* Place the initial four counters in the center */
-     board[SIZE/2 - 1][SIZE/2 - 1] = board[SIZE/2][SIZE/2] = 'O';
-     board[SIZE/2 - 1][SIZE/2] = board[SIZE/2][SIZE/2 - 1] = '@';
-     display(board);
-        scanf("%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c", 
-        &board[0][0],&board[0][1],&board[0][2],&board[0][3],&board[0][4],&board[0][5],&board[0][6],&board[0][7],&board[1][0],&board[1][1],&board[1][2],&board[1][3],&board[1][4],&board[1][5],&board[1][6],&board[1][7],&board[2][0],&board[2][1],&board[2][2],&board[2][3],&board[2][4],&board[2][5],&board[2][6],&board[2][7],&board[3][0],&board[3][1],&board[3][2],&board[3][3],&board[3][4],&board[3][5],&board[3][6],&board[3][7],&board[4][0],&board[4][1],&board[4][2],&board[4][3],&board[4][4],&board[4][5],&board[4][6],&board[4][7],&board[5][0],&board[5][1],&board[5][2],&board[5][3],&board[5][4],&board[5][5],&board[5][6],&board[5][7],&board[6][0],&board[6][1],&board[6][2],&board[6][3],&board[6][4],&board[6][5],&board[6][6],&board[6][7],&board[7][0],&board[7][1],&board[7][2],&board[7][3],&board[7][4],&board[7][5],&board[7][6],&board[7][7]
-        );
+    //  /* Place the initial four counters in the center */
+    //  board[SIZE/2 - 1][SIZE/2 - 1] = board[SIZE/2][SIZE/2] = 'O';
+    //  board[SIZE/2 - 1][SIZE/2] = board[SIZE/2][SIZE/2 - 1] = '@';
+    //  display(board);
+        scanf("%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%d%c", 
+        &board[0][0],&board[0][1],&board[0][2],&board[0][3],&board[0][4],&board[0][5],&board[0][6],&board[0][7],&board[1][0],&board[1][1],&board[1][2],&board[1][3],&board[1][4],&board[1][5],&board[1][6],&board[1][7],&board[2][0],&board[2][1],&board[2][2],&board[2][3],&board[2][4],&board[2][5],&board[2][6],&board[2][7],&board[3][0],&board[3][1],&board[3][2],&board[3][3],&board[3][4],&board[3][5],&board[3][6],&board[3][7],&board[4][0],&board[4][1],&board[4][2],&board[4][3],&board[4][4],&board[4][5],&board[4][6],&board[4][7],&board[5][0],&board[5][1],&board[5][2],&board[5][3],&board[5][4],&board[5][5],&board[5][6],&board[5][7],&board[6][0],&board[6][1],&board[6][2],&board[6][3],&board[6][4],&board[6][5],&board[6][6],&board[6][7],&board[7][0],&board[7][1],&board[7][2],&board[7][3],&board[7][4],&board[7][5],&board[7][6],&board[7][7],
+        &x,&y);
         if(valid_moves(board, moves, 'O'))
          {
-          scanf("%d%c", &x, &y);              /* Read input        */
+        //   scanf("%d%c", &x, &y);              /* Read input        */
           y = tolower(y) - 'a';         /* Convert to column index */
           x--;                          /* Convert to row index    */
           make_move(board, x, y, 'O');
@@ -81,28 +82,38 @@ void main()
             //  scanf("%c", &again);
            }
            else
-             printf("\nNeither of us can go, so the game is over.\n");
+            over = 1;
+            //  printf("\nNeither of us can go, so the game is over.\n");
 
         // computer turn
         /* It is the computer's turn                    */
-        if(valid_moves(board, moves, '@')) /* Check for valid moves */
-        {
-        invalid_moves = 0;               /* Reset invalid count   */
-        computer_move(board, moves, '@');
-        no_of_moves++;                   /* Increment move count  */
-        }
-        else
-        {
-        if(++invalid_moves<2)
-            printf("\nI have to pass, your go\n"); /* No valid move */
-        else
-            printf("\nNeither of us can go, so the game is over.\n");
-        }
+
+        do
+          if(valid_moves(board, moves, '@')) /* Check for valid moves */
+          {
+          invalid_moves = 0;               /* Reset invalid count   */
+          computer_move(board, moves, '@');
+          no_of_moves++;                   /* Increment move count  */
+          }
+          else
+          {
+          if(++invalid_moves<2)
+              over = 0;
+              // printf("\nI have to pass, your go\n"); /* No valid move */
+          else
+              // printf("\nNeither of us can go, so the game is over.\n");
+              over = 1;
+          }
+        while(!valid_moves(board, moves, 'O') && over == 0);
+
+
+
+
         display(board);
         for (int i=0; i<SIZE;i++){
                  for (int j=0; j<SIZE;j++){
                    if (moves[i][j]){
-                     printf( "(%d, %c)\n", i+1, j + 'a');
+                     printf( "%d%c\n", i+1, j + 'a');
                    }
                  }
         }
@@ -113,7 +124,8 @@ void main()
             comp_score += board[row][col] == '@';
             user_score += board[row][col] == 'O';
         }
-        printf("%d\n %d\n\n", comp_score, user_score);
+        printf("(%d,%d)\n", comp_score, user_score);
+        printf("%d", over);
 
 
 
