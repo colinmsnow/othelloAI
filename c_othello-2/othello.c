@@ -35,6 +35,8 @@ void main()
   int x = 0;                        /* Row number          */
   char again = 0;                   /* Replay choice input */
   int player = 0;                   /* Player indicator    */
+  int a;
+  int b;
 
    printf("\nREVERSI\n\n");
   printf("You can go first on the first game, then we will take turns.\n");
@@ -76,27 +78,30 @@ void main()
            {
              fflush(stdin);              /* Flush the keyboard buffer */
              printf("Please enter your move (row column): "); 
-             scanf("%d%c", &x, &y);              /* Read input        */
-             y = tolower(y) - 'a';         /* Convert to column index */
-             x--;                          /* Convert to row index    */
-             if( x>=0 && y>=0 && x<SIZE && y<SIZE && moves[x][y])
-             {
+            //  scanf("%d%c", &x, &y);              /* Read input        */
+            //  y = tolower(y) - 'a';         /* Convert to column index */
+            //  x--;                          /* Convert to row index    */
+            //  if( x>=0 && y>=0 && x<SIZE && y<SIZE && moves[x][y])
+            //  {
                for (int i=0; i<SIZE;i++){
                  for (int j=0; j<SIZE;j++){
                    if (moves[i][j] == 1){
                      printf( "%d, %d\n", i, j);
+                     a = i;
+                     b = j;
                    }
                 //  printf( "%d\n", moves[i][j]);
                  }
                }
               //  printf( "%d\n", moves[x][y]);
-               make_move(board, x, y, 'O');
+              //  make_move(board, x, y, 'O');
+              make_move(board, a, b, 'O');
                no_of_moves++;              /* Increment move count */
                break;
              }
-             else
-               printf("Not a valid move, try again.\n");
-           }
+            //  else
+            //    printf("Not a valid move, try again.\n");
+          //  }
          }
          else                              /* No valid moves */
            if(++invalid_moves<2)
@@ -497,3 +502,14 @@ void make_move(char board[][SIZE], int row, int col, char player)
        }
      }
 }
+
+// int createRandom(int lower, int upper,  
+//                              int count) 
+// { 
+//     int i; 
+//     for (i = 0; i < count; i++) { 
+//         int num = (rand() % 
+//            (upper - lower + 1)) + lower; 
+//         return num;
+//     } 
+// } 
