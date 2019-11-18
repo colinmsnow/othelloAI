@@ -39,14 +39,6 @@ void main()
   int b;
   int over = 0;
 
-//    printf("\nREVERSI\n\n");
-//   printf("You can go first on the first game, then we will take turns.\n");
-//   printf("   You will be white - (O)\n   I will be black   - (@).\n");
-//   printf("Select a square for your move by typing a digit for the row\n "
-//     "and a letter for the column with no spaces between.\n");
-//   printf("\nGood luck!  Press Enter to start.\n");
-//   scanf("%c", &again);
-
    /* Prompt for how to play - as before */
 
    /* The main game loop */
@@ -128,92 +120,6 @@ void main()
         printf("%d", over);
 
 
-
-
-        
-        
-        
-
-//      /* The game play loop */
-
-//     //    display(board);             /* Display the board  */
-//        if(player++ % 2)
-//        { /*   It is the player's turn                    */
-//          if(valid_moves(board, moves, 'O'))
-//          {
-//            /* Read player moves until a valid move is entered */
-//            for(;;)
-//            {
-//                 for (int i=0; i<SIZE;i++){
-//                  for (int j=0; j<SIZE;j++){
-//                    if (moves[i][j]){
-//                      printf( "(%d, %c)\n", i+1, j + 'a');
-//                    }
-//                 //  printf( "%d\n", moves[i][j]);
-//                  }
-//                }
-//              fflush(stdin);              /* Flush the keyboard buffer */
-//             //  printf("Please enter your move (row column): "); 
-//              scanf("%d%c", &x, &y);              /* Read input        */
-//              y = tolower(y) - 'a';         /* Convert to column index */
-//              x--;                          /* Convert to row index    */
-//              if( x>=0 && y>=0 && x<SIZE && y<SIZE && moves[x][y])
-//              {
-
-//                make_move(board, x, y, 'O');
-//                no_of_moves++;              /* Increment move count */
-//                break;
-//           }
-//          }
-//          }
-//          else                              /* No valid moves */
-//            if(++invalid_moves<2)
-//            {
-//              fflush(stdin);
-//              printf("\nYou have to pass, press return");
-//              scanf("%c", &again);
-//            }
-//            else
-//              printf("\nNeither of us can go, so the game is over.\n");
-//        }
-//        else
-//        { /* It is the computer's turn                    */
-//          if(valid_moves(board, moves, '@')) /* Check for valid moves */
-//          {
-//            invalid_moves = 0;               /* Reset invalid count   */
-//            computer_move(board, moves, '@');
-//            no_of_moves++;                   /* Increment move count  */
-//          }
-//          else
-//          {
-//            if(++invalid_moves<2)
-//              printf("\nI have to pass, your go\n"); /* No valid move */
-//            else
-//              printf("\nNeither of us can go, so the game is over.\n");
-//          }
-//        }
-
-//      /* Game is over */
-//      display(board);  /* Show final board */
-
-//      /* Get final scores and display them */
-//      comp_score = user_score = 0; 
-//      for(row = 0; row < SIZE; row++)
-//        for(col = 0; col < SIZE; col++)
-//        {
-//          comp_score += board[row][col] == '@';
-//          user_score += board[row][col] == 'O';
-//        }
-//      printf("The final score is:\n");
-//      printf("Computer %d\n    User %d\n\n", comp_score, user_score);
-
-//      fflush(stdin);               /* Flush the input buffer */
-//      printf("Do you want to play again (y/n): ");
-//      scanf("%c", &again);         /* Get y or n             */
-
-//    printf("\nGoodbye\n"); 
-
-}
 
 /***********************************************
  * Function to display the board in it's       *
