@@ -4,8 +4,6 @@ import time
 import threading
 import random
 
-global result
-
 class Move:
 
     def __init__ (self):
@@ -47,6 +45,6 @@ board, moves, score, over = move.make_move('3e')
 
 while over == '0' and moves != []:
     board, moves, score, over = move.make_move(moves[random.randint(0,len(moves)-1)])
-    if over == '1':
-        print(board, moves, score, over)
+    # if over == '1':
+    print(board, moves, score, over)
         
