@@ -225,7 +225,7 @@ void display(char board[][SIZE])
         printf("1");
       }
       if (board[row][col] == 64){
-        printf("2");
+        printf("-1");
       }
        /* Display counters in row */
       // printf(" %c", board[row][col]);  /* Display counters in row */
