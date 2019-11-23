@@ -1,4 +1,4 @@
-#import sys
+import sys
 sys.path.append('..')
 from utils import *
 
@@ -10,11 +10,22 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
+# from cothello import crunnerago
+
+# game = crunnerago.Move()   #TODO: move to different doc
+
 class OthelloNNet(nn.Module):
-        self.action_size = game.getActionSize()
+    #TODO: make sure game has .getBoardSize() and .getActionSize()
+    def __init__(self, game, args):
+        # game params
+        # self.board_x, self.board_y = game.getBoardSize()
+        self.board_x, self.board_y = 8,8
         self.args = args
 
-        super(OthelloNNet, self).__init__()
+        #TODO: Look into args and figure out .num_channels()
+        #Args 
+
+        #TODO: Create flow diagram of neural network
         self.conv1 = nn.Conv2d(1, args.num_channels, 3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1, padding=1)
         self.conv3 = nn.Conv2d(args.num_channels, args.num_channels, 3, stride=1)
@@ -50,4 +61,5 @@ class OthelloNNet(nn.Module):
         pi = self.fc3(s)                                                                         # batch_size x action_size
         v = self.fc4(s)                                                                          # batch_size x 1
 
+#TODO: Understand the math behind this
 return F.log_softmax(pi, dim=1), torch.tanh(v)

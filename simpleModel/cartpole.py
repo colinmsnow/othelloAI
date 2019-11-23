@@ -1,4 +1,4 @@
-# import gym
+import gym
 import math
 import random
 import numpy as np
@@ -13,21 +13,20 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
-from cothello import crunner
 
 
-env = crunner.Move() #Othello game
+env = gym.make('CartPole-v0').unwrapped
 
-# env = gym.make('CartPole-v0').unwrapped
+# set up matplotlib
+is_ipython = 'inline' in matplotlib.get_backend()
+if is_ipython:
+    from IPython import display
 
-# # set up matplotlib
-# is_ipython = 'inline' in matplotlib.get_backend()
-# if is_ipython:
-#     from IPython import display
+plt.ion()
 
-# plt.ion()
-
+# if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -53,10 +52,11 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
+
 class DQN(nn.Module):
 
     def __init__(self, h, w, outputs):
-        super(DQN, self).__init__()             #TODO: adjust size of conv layers to fit 8x8 board
+        super(DQN, self).__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
@@ -66,7 +66,7 @@ class DQN(nn.Module):
 
         # Number of Linear input connections depends on output of conv2d layers
         # and therefore the input image size, so compute it.
-        def conv2d_size_out(size, kernel_size = 5, stride = 2):     #TODO: adjust size of layers to fot our data
+        def conv2d_size_out(size, kernel_size = 5, stride = 2):
             return (size - (kernel_size - 1) - 1) // stride  + 1
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
@@ -76,14 +76,19 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))             #TODO: change layer structure to fit our model
+        x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
 
+
+
+
+
 resize = T.Compose([T.ToPILImage(),
                     T.Resize(40, interpolation=Image.CUBIC),
                     T.ToTensor()])
+
 
 
 def get_cart_location(screen_width):
@@ -91,56 +96,43 @@ def get_cart_location(screen_width):
     scale = screen_width / world_width
     return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
 
-# def get_screen():  #TODO replace with board get screen method
-#     # Returned screen requested by gym is 400x600x3, but is sometimes larger
-#     # such as 800x1200x3. Transpose it into torch order (CHW).
-#     screen = env.render(mode='rgb_array').transpose((2, 0, 1))
-#     # Cart is in the lower half, so strip off the top and bottom of the screen
-#     _, screen_height, screen_width = screen.shape
-#     screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
-#     view_width = int(screen_width * 0.6)
-#     cart_location = get_cart_location(screen_width)
-#     if cart_location < view_width // 2:
-#         slice_range = slice(view_width)
-#     elif cart_location > (screen_width - view_width // 2):
-#         slice_range = slice(-view_width, None)
-#     else:
-#         slice_range = slice(cart_location - view_width // 2,
-#                             cart_location + view_width // 2)
-#     # Strip off the edges, so that we have a square image centered on a cart
-#     screen = screen[:, :, slice_range]
-#     # Convert to float, rescale, convert to torch tensor
-#     # (this doesn't require a copy)
-#     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
-#     screen = torch.from_numpy(screen)
-#     # Resize, and add a batch dimension (BCHW)
-#     return resize(screen).unsqueeze(0).to(device)
-
-def get_screen():  #TODO replace with board get screen method
+def get_screen():
     # Returned screen requested by gym is 400x600x3, but is sometimes larger
     # such as 800x1200x3. Transpose it into torch order (CHW).
-    # screen = env.render(mode='rgb_array').transpose((2, 0, 1))
-    screen = env.state()[0]
+    screen = env.render(mode='rgb_array').transpose((2, 0, 1))
     # Cart is in the lower half, so strip off the top and bottom of the screen
-    # _, screen_height, screen_width = screen.shape
-    screen_height, screen_width = 8,8
-
+    _, screen_height, screen_width = screen.shape
+    screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
+    view_width = int(screen_width * 0.6)
+    cart_location = get_cart_location(screen_width)
+    if cart_location < view_width // 2:
+        slice_range = slice(view_width)
+    elif cart_location > (screen_width - view_width // 2):
+        slice_range = slice(-view_width, None)
+    else:
+        slice_range = slice(cart_location - view_width // 2,
+                            cart_location + view_width // 2)
+    # Strip off the edges, so that we have a square image centered on a cart
+    screen = screen[:, :, slice_range]
     # Convert to float, rescale, convert to torch tensor
     # (this doesn't require a copy)
-    screen = np.ascontiguousarray(screen, dtype=np.float32)
+    screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
     screen = torch.from_numpy(screen)
     # Resize, and add a batch dimension (BCHW)
     return resize(screen).unsqueeze(0).to(device)
 
 
 env.reset()
-# plt.figure()
-# plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(),
-#            interpolation='none')
-# plt.title('Example extracted screen')
-# plt.show()
+plt.figure()
+plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(),
+           interpolation='none')
+plt.title('Example extracted screen')
+plt.show()
 
-BATCH_SIZE = 128    #TODO: adjust values
+
+
+
+BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 0.9
 EPS_END = 0.05
@@ -150,15 +142,11 @@ TARGET_UPDATE = 10
 # Get screen size so that we can initialize layers correctly based on shape
 # returned from AI gym. Typical dimensions at this point are close to 3x40x90
 # which is the result of a clamped and down-scaled render buffer in get_screen()
-
-
-# init_screen = get_screen()            #TODO: Define the height and width of the screen
-# _, _, screen_height, screen_width = init_screen.shape
-screen_height = 8   #TODO: Define the height and width of the screen (and check that this is correct)
-screen_width = 8
+init_screen = get_screen()
+_, _, screen_height, screen_width = init_screen.shape
 
 # Get number of actions from gym action space
-n_actions = env.action_space.n   #TODO: replace with self.actionNumber
+n_actions = env.action_space.n
 
 policy_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net = DQN(screen_height, screen_width, n_actions).to(device)
@@ -209,6 +197,10 @@ def plot_durations():
     if is_ipython:
         display.clear_output(wait=True)
         display.display(plt.gcf())
+
+
+
+
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
@@ -255,7 +247,8 @@ def optimize_model():
 
 
 
-num_episodes = 50
+
+num_episodes = 300
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
@@ -297,3 +290,7 @@ env.render()
 env.close()
 plt.ioff()
 plt.show()
+
+
+
+

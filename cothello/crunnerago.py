@@ -5,6 +5,14 @@ import threading
 import random
 import numpy as np
 
+
+# To import:
+
+# import sys
+# sys.path.append(".")
+# from cothelloago import crunner
+# game = crunner.Move() #Othello game
+
 class Move:
 
     def __init__ (self):
@@ -53,6 +61,11 @@ class Move:
         self.score = self.output[-2].strip('\n')
         self.over = self.output[-1]
         self.boardArray = self.board_array()
+        # boardArray = np.array (8,8)
+        # board = str (64)
+        # moves = list form '3e'
+        # score = tuple (1,2)
+        # over = 0 if False, 1 if True
         return (self.boardArray, self.board, self.moves, self.score, self.over)
 
     def board_array(self):
