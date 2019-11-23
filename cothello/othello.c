@@ -38,13 +38,13 @@ void main()
   int a;
   int b;
 
-   printf("\nREVERSI\n\n");
-  printf("You can go first on the first game, then we will take turns.\n");
-  printf("   You will be white - (O)\n   I will be black   - (@).\n");
-  printf("Select a square for your move by typing a digit for the row\n "
-    "and a letter for the column with no spaces between.\n");
-  printf("\nGood luck!  Press Enter to start.\n");
-  scanf("%c", &again);
+  //  printf("\nREVERSI\n\n");
+  // printf("You can go first on the first game, then we will take turns.\n");
+  // printf("   You will be white - (O)\n   I will be black   - (@).\n");
+  // printf("Select a square for your move by typing a digit for the row\n "
+  //   "and a letter for the column with no spaces between.\n");
+  // printf("\nGood luck!  Press Enter to start.\n");
+  // scanf("%c", &again);
 
    /* Prompt for how to play - as before */
 
@@ -147,7 +147,7 @@ void main()
 
      fflush(stdin);               /* Flush the input buffer */
      printf("Do you want to play again (y/n): ");
-     scanf("%c", &again);         /* Get y or n             */
+    //  scanf("%c", &again);         /* Get y or n             */
    }while(tolower(again) == 'y'); /* Go again on y          */
 
    printf("\nGoodbye\n"); 
