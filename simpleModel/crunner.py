@@ -4,26 +4,29 @@ import time
 import threading
 import random
 import numpy as np
+import math
 
 class Move:
 
     def __init__ (self):
         self.board = "                           O@      @O                           \n"
         self.result = []
-        self.moves = ['3e', '4f', '5c', '6d']
+        # self.moves = ['3e', '4f', '5c', '6d']
+        self.moves = [20,29,34,43]
         self.score = (0,0)
         self.over = '0'
         self.actionNumber = 64
-        self.boardArray = self.boardArray()
+        self.boardArray = self.board_array()
     
     def reset(self):
         self.board = "                           O@      @O                           \n"
         self.result = []
-        self.moves = ['3e', '4f', '5c', '6d']
+        # self.moves = ['3e', '4f', '5c', '6d']
+        self.moves = [20,29,34,43]
         self.score = (0,0)
         self.over = '0'
         self.actionNumber = 64
-        self.boardArray = self.boardArray()
+        self.boardArray = self.board_array()
 
     def output_reader(self, proc):
         self.result = []
@@ -39,6 +42,7 @@ class Move:
 
         proc = subprocess.Popen(['./compiledothello.c'],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        move = self.encode_move(move)
         input_write = self.board + move
         proc.stdin.write(input_write.encode())
         proc.stdin.close()
@@ -50,6 +54,7 @@ class Move:
         #     self.moves.append(item)
         self.moves = self.output[1:-2]
         self.moves = [s.strip('\n') for s in self.moves]
+        self.moves = [self.decode_move(a) for a in self.moves]
         self.score = self.output[-2].strip('\n')
         self.over = self.output[-1]
         self.boardArray = self.board_array()
@@ -78,14 +83,41 @@ class Move:
         return [self.boardArray, self.board, self.moves, self.score, self.over]
 
 
+    def encode_move(self, move):
+        ''' Encode a move into the format that the c program wants for example move 0 is 1a'''
+        move = move+1
+        row = math.ceil(move/8)
+        column = move - 8*(row -1)
+
+        start = ord('a') - 1
+        letter = chr(start + column)
+
+        return str(row) + str(letter)
+
+
+    def decode_move(self, move):
+        ''' Decode a move into an array position for example move 1a is 0'''
+        row = int(move[0]) -1
+        column = ord(move[1]) - ord('a')
+        decoded = 8*row + column
+        return decoded
+
+
 
 if __name__ == "__main__":
 
     move = Move()
 
+
+    # print(move.decode_move('3e'))
+    # print(move.decode_move('4f'))
+    # print(move.decode_move('5c'))
+    # print(move.decode_move('6d'))
+    print(move.state()[2])
+
     print(move.board_array())
     
-    moves = ['3e', '4f', '5c', '6d']
+    moves = [20,29,34,43]
     score = (0,0)
     over = '0'
 
