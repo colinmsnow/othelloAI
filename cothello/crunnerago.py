@@ -4,6 +4,7 @@ import time
 import threading
 import random
 import numpy as np
+import math
 
 
 # To import:
@@ -18,20 +19,22 @@ class Move:
     def __init__ (self):
         self.board = "                           O@      @O                           \n"
         self.result = []
-        self.moves = ['3e', '4f', '5c', '6d']
+        # self.moves = ['3e', '4f', '5c', '6d']
+        self.moves = [20,29,34,43]
         self.score = (0,0)
         self.over = '0'
         self.actionNumber = 64
-        self.boardArray = self.boardArray()
+        self.boardArray = self.board_array()
     
     def reset(self):
         self.board = "                           O@      @O                           \n"
         self.result = []
-        self.moves = ['3e', '4f', '5c', '6d']
+        # self.moves = ['3e', '4f', '5c', '6d']
+        self.moves = [20,29,34,43]
         self.score = (0,0)
         self.over = '0'
         self.actionNumber = 64
-        self.boardArray = self.boardArray()
+        self.boardArray = self.board_array()
 
     def output_reader(self, proc):
         self.result = []
@@ -44,9 +47,11 @@ class Move:
                 return self.result
 
     def make_move(self, move):
+        """Takes a move (number (0,63)) and returns the same as state"""
 
-        proc = subprocess.Popen(['./compiledothello.c'],
+        proc = subprocess.Popen(["./compiledothello.c"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        move = self.encode_move(move)
         input_write = self.board + move
         proc.stdin.write(input_write.encode())
         proc.stdin.close()
@@ -58,14 +63,10 @@ class Move:
         #     self.moves.append(item)
         self.moves = self.output[1:-2]
         self.moves = [s.strip('\n') for s in self.moves]
-        self.score = self.output[-2].strip('\n')
-        self.over = self.output[-1]
+        self.moves = [self.decode_move(a) for a in self.moves]
+        self.score = eval(self.output[-2].strip('\n'))
+        self.over = int(self.output[-1])
         self.boardArray = self.board_array()
-        # boardArray = np.array (8,8)
-        # board = str (64)
-        # moves = list form '3e'
-        # score = tuple (1,2)
-        # over = 0 if False, 1 if True
         return (self.boardArray, self.board, self.moves, self.score, self.over)
 
     def board_array(self):
@@ -88,7 +89,29 @@ class Move:
 
 
     def state(self):
+        """Returns a numpy array of the board, the board string, the available moves in a number (0-63), 
+        the score (opponent, self), and whether the game is over (0,1)"""
         return [self.boardArray, self.board, self.moves, self.score, self.over]
+
+
+    def encode_move(self, move):
+        ''' Encode a move into the format that the c program wants for example move 0 is 1a'''
+        move = move+1
+        row = math.ceil(move/8)
+        column = move - 8*(row -1)
+
+        start = ord('a') - 1
+        letter = chr(start + column)
+
+        return str(row) + str(letter)
+
+
+    def decode_move(self, move):
+        ''' Decode a move into an array position for example move 1a is 0'''
+        row = int(move[0]) -1
+        column = ord(move[1]) - ord('a')
+        decoded = 8*row + column
+        return decoded
 
 
 
@@ -96,9 +119,16 @@ if __name__ == "__main__":
 
     move = Move()
 
+
+    # print(move.decode_move('3e'))
+    # print(move.decode_move('4f'))
+    # print(move.decode_move('5c'))
+    # print(move.decode_move('6d'))
+    print(move.state()[2])
+
     print(move.board_array())
     
-    moves = ['3e', '4f', '5c', '6d']
+    moves = [20,29,34,43]
     score = (0,0)
     over = '0'
 

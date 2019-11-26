@@ -240,7 +240,7 @@ def plot_durations():
     durations_t = torch.tensor(episode_durations, dtype=torch.float)
     plt.title('Training...')
     plt.xlabel('Episode')
-    plt.ylabel('Duration')
+    plt.ylabel('Score')
     plt.plot(durations_t.numpy())
     # Take 100 episode averages and plot them too
     if len(durations_t) >= 100:
@@ -367,9 +367,9 @@ for i_episode in range(num_episodes):
 
         # Perform one step of the optimization (on the target network)
         
-        if int(finished):
+        if finished:
             print(score)
-            episode_durations.append(t + 1)
+            episode_durations.append(reward)
             plot_durations()
             # print(env.state()[0])
             if score[1] > score[0]:
