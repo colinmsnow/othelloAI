@@ -56,7 +56,7 @@ class Move:
         self.moves = self.output[1:-2]
         self.moves = [s.strip('\n') for s in self.moves]
         self.moves = [self.decode_move(a) for a in self.moves]
-        self.score = self.output[-2].strip('\n')
+        self.score = eval(self.output[-2].strip('\n'))
         self.over = self.output[-1]
         self.boardArray = self.board_array()
         return (self.boardArray, self.board, self.moves, self.score, self.over)

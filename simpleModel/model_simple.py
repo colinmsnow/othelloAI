@@ -2,6 +2,13 @@
 import sys
 sys.path.append(".")
 
+# Bad but works
+import warnings
+warnings.filterwarnings("ignore")
+
+
+
+
 import gym
 import math
 import random
@@ -301,6 +308,7 @@ def optimize_model():
 
 
 num_episodes = 300
+wins = 0
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
@@ -312,8 +320,8 @@ for i_episode in range(num_episodes):
         # Select and perform an action
         action = select_action(state, env)
         # print(action)
-        _,_,_, reward, finished = env.make_move(action.item())
-        reward = float(reward[1])
+        _,_,_, score, finished = env.make_move(action.item())
+        reward = float(score[1])
         # print(reward)
         reward = torch.tensor([reward], device=device)
 
@@ -360,10 +368,12 @@ for i_episode in range(num_episodes):
         # Perform one step of the optimization (on the target network)
         
         if int(finished):
-            print('finished')
+            print(score)
             episode_durations.append(t + 1)
             plot_durations()
             # print(env.state()[0])
+            if score[1] > score[0]:
+                wins +=1
             break
 
         optimize_model()
@@ -375,6 +385,8 @@ for i_episode in range(num_episodes):
 
 
 print('Complete')
+print("AI won " + str(wins) + " games out of " + str(num_episodes))
+
 # env.render()
 # env.close()
 plt.ioff()
