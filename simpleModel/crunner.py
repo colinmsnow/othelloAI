@@ -6,6 +6,7 @@ import random
 import numpy as np
 import math
 
+
 class Move:
 
     def __init__ (self):
@@ -40,7 +41,7 @@ class Move:
 
     def make_move(self, move):
 
-        proc = subprocess.Popen(['./compiledothello.c'],
+        proc = subprocess.Popen(["./compiledothello.c"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         move = self.encode_move(move)
         input_write = self.board + move

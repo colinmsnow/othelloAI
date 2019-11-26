@@ -91,6 +91,7 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
+        print(x)
         x = F.relu(self.bn1(self.conv1(x)))
         # x = F.relu(self.bn2(self.conv2(x)))
         # x = F.relu(self.bn3(self.conv3(x)))
@@ -98,7 +99,7 @@ class DQN(nn.Module):
         # print(x)
         x = F.relu(self.fcl(x))
         # return self.head(x.view(x.size(0), -1))
-        print(x)
+        # print(x)
         return x
 
 
@@ -219,7 +220,8 @@ def select_action(state, env):
 
             return policymax
     else:
-        return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
+        # print("random")
+        return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
 
 
 episode_durations = []
@@ -260,10 +262,11 @@ def optimize_model():
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                           batch.next_state)), device=device, dtype=torch.uint8)
-    print(batch.next_state)
+    print(batch.state)
+    # print(batch.state.size())
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
-    print(non_final_next_states)
+    # print(non_final_next_states)
     state_batch = torch.cat(batch.state)
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
@@ -302,38 +305,73 @@ for i_episode in range(num_episodes):
     env.reset()
     last_screen = get_screen()
     current_screen = get_screen()
-    state = current_screen - last_screen
+    state = current_screen
+    # print(state)
     for t in count():
         # Select and perform an action
         action = select_action(state, env)
-        _,_,_, reward, done = env.make_move(action.item())
+        # print(action)
+        _,_,_, reward, finished = env.make_move(action.item())
         reward = float(reward[1])
+        # print(reward)
         reward = torch.tensor([reward], device=device)
 
         # Observe new state
         last_screen = current_screen
         current_screen = get_screen()
-        print(done)
-        if not done:
-            next_state = current_screen - last_screen
-        else:
-            next_state = None
+
+        # if t > 15:
+        #     done == True
+        # else:
+        #     done == False
+        # print(done)
+        # print(current_screen)
+        # print(last_screen)
+        # if not done:
+        #     next_state = current_screen
+        # else:
+        #     next_state = None
+
+        next_state = current_screen
 
         # Store the transition in memory
+        # print(state)
+        # print(state.size())
+        # print(action)
+        # print(action.size())
+        # print(next_state)
+        # # print(next_state.size())
+        # print(reward)
+        # print(reward.size())
         memory.push(state, action, next_state, reward)
 
         # Move to the next state
         state = next_state
 
+        print(state)
+        print(reward)
+        print(finished)
+        print(type(finished))
+
+
+        # print(env.state()[0])
+
         # Perform one step of the optimization (on the target network)
-        optimize_model()
-        if done:
+        
+        if int(finished):
+            print('finished')
             episode_durations.append(t + 1)
             plot_durations()
+            # print(env.state()[0])
             break
+
+        optimize_model()
+    
     # Update the target network, copying all weights and biases in DQN
     if i_episode % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
+
+
 
 print('Complete')
 # env.render()
