@@ -91,7 +91,7 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        print(x)
+        # print(x)
         x = F.relu(self.bn1(self.conv1(x)))
         # x = F.relu(self.bn2(self.conv2(x)))
         # x = F.relu(self.bn3(self.conv3(x)))
@@ -214,7 +214,7 @@ def select_action(state, env):
             # print(value)
             # print(index)
 
-            policymax = torch.tensor([possibleMoves[index]])
+            policymax = torch.tensor([[possibleMoves[index]]])
             # print(policymax)
 
 
@@ -262,12 +262,13 @@ def optimize_model():
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                           batch.next_state)), device=device, dtype=torch.uint8)
-    print(batch.state)
+    # print(batch.state)
     # print(batch.state.size())
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
     # print(non_final_next_states)
     state_batch = torch.cat(batch.state)
+    # print(batch.action)
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
 
@@ -348,10 +349,10 @@ for i_episode in range(num_episodes):
         # Move to the next state
         state = next_state
 
-        print(state)
-        print(reward)
-        print(finished)
-        print(type(finished))
+        # print(state)
+        # print(reward)
+        # print(finished)
+        # print(type(finished))
 
 
         # print(env.state()[0])
