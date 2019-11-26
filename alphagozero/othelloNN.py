@@ -1,3 +1,7 @@
+'''
+Code from https://github.com/suragnair/alpha-zero-general
+'''
+
 import sys
 sys.path.append('..')
 from utils import *
@@ -10,9 +14,25 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-# from cothello import crunnerago
 
+# from cothello import crunnerago
 # game = crunnerago.Move()   #TODO: move to different doc
+
+'''
+This module contains the OthelloNNet class, which is the convolutional neural net we will be using for our RL.
+The CNN has:
+ - 4 convolutional layers
+ - 4 fully connected layers
+
+ pytorch's dropout module randomly zeros values which prevents co-adaptation.
+ By using batch normalization, no activation will get too high or too low.
+ The network also uses ReLu as its activation function of choice.
+
+ Note how pi, or the policy, is derived by an output size of the number of valid moves. softmax 
+ will convert the output values to probabilities that sum to one.
+ On the other hand, v, is a single value that is likely predicting the state of the game. the tanh function adjusts v.Ss
+
+'''
 
 class OthelloNNet(nn.Module):
     #TODO: make sure game has .getBoardSize() and .getActionSize()
@@ -61,5 +81,4 @@ class OthelloNNet(nn.Module):
         pi = self.fc3(s)                                                                         # batch_size x action_size
         v = self.fc4(s)                                                                          # batch_size x 1
 
-#TODO: Understand the math behind this
 return F.log_softmax(pi, dim=1), torch.tanh(v)
