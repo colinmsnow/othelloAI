@@ -19,7 +19,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 #TODO: depending on the name of the file that holds OthelloNNet, rename import file
-from .othelloNN import OthelloNNet as onnet
+from othelloNN import OthelloNNet as onnet
 
 args = dotdict({
     'lr': 0.001,
@@ -32,9 +32,11 @@ args = dotdict({
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
+        super(NNetWrapper, self).__init__(game)
         self.nnet = onnet(game, args)
         self.board_x, self.board_y = 8, 8
-        self.action_size = game.getActionSize()
+        # self.action_size = game.getActionSize()
+        self.action_size = len(game.moves)
 
         if args.cuda:
             self.nnet.cuda()

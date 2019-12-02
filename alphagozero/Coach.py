@@ -1,5 +1,5 @@
 from collections import deque
-from .Arena import Arena
+from Arena import Arena
 from MCTS import MCTS
 import numpy as np
 from pytorch_classification.utils import Bar, AverageMeter
@@ -70,18 +70,22 @@ class MCTS():
             v: the negative of the value of the current canonicalBoard
         """
 
-        s = self.game.stringRepresentation(canonicalBoard)
+        # s = self.game.stringRepresentation(canonicalBoard)
+        s = self.game.state()[0].tostring()
 
         if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
-        if self.Es[s]!=0:
+            # self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
+            self.Es[s] = self.game.over
+        if self.Es[s]!="0":
             # terminal node
-            return -self.Es[s]
+            # return -self.Es[s]
+            return str(-int(self.Es[s]))
 
         if s not in self.Ps:
             # leaf node
             self.Ps[s], v = self.nnet.predict(canonicalBoard)
-            valids = self.game.getValidMoves(canonicalBoard, 1)
+            # valids = self.game.getValidMoves(canonicalBoard, 1)
+            valids = self.game.moves
             self.Ps[s] = self.Ps[s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
             if sum_Ps_s > 0:
@@ -104,7 +108,8 @@ class MCTS():
         best_act = -1
 
         # pick the action with the highest upper confidence bound
-        for a in range(self.game.getActionSize()):
+        # for a in range(self.game.getActionSize()):
+        for a in range(len(self.game.moves)):
             if valids[a]:
                 if (s,a) in self.Qsa:
                     u = self.Qsa[(s,a)] + self.args.cpuct*self.Ps[s][a]*math.sqrt(self.Ns[s])/(1+self.Nsa[(s,a)])
@@ -130,7 +135,7 @@ class MCTS():
             self.Nsa[(s,a)] = 1
 
         self.Ns[s] += 1
-return -v
+        return -v
 
 class Coach():
     """
@@ -162,13 +167,15 @@ class Coach():
         """
         trainExamples = []
         #TODO: look up getInitBoard, getCanonicalForm, getActionProg,getSymmetries in game.py
-        board = self.game.getInitBoard()
+        # board = self.game.getInitBoard()
+        board = self.game.state()[0]
         self.curPlayer = 1
         episodeStep = 0
 
         while True:
             episodeStep += 1
-            canonicalBoard = self.game.getCanonicalForm(board,self.curPlayer)
+            # canonicalBoard = self.game.getCanonicalForm(board,self.curPlayer)
+            canonicalBoard = self.game.state()[0]
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
@@ -280,4 +287,4 @@ class Coach():
                 self.trainExamplesHistory = Unpickler(f).load()
             f.closed
             # examples based on the model were already collected (loaded)
-self.skipFirstSelfPlay = True
+        self.skipFirstSelfPlay = True

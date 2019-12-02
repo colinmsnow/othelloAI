@@ -3,9 +3,9 @@ from nnet import NNetWrapper as nn
 from utils import *
 
 import sys
-sys.path.append(".")
-from cothelloago import crunner
-Game = crunner.Move() #Othello game
+sys.path.append("/home/othelloAI/cothello")
+from crunnerago import Move
+Game = Move() #Othello game
 
 args = dotdict({
     'numIters': 1000,
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     if args.load_model:
         print("Load trainExamples from file")
         c.loadTrainExamples()
-c.learn()
+    c.learn()

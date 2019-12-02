@@ -122,4 +122,4 @@ class MCTS():
             self.Nsa[(s,a)] = 1
 
         self.Ns[s] += 1
-return -v
+        return -v

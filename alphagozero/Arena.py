@@ -110,4 +110,4 @@ class Arena():
             
         bar.finish()
 
-return oneWon, twoWon, draws
+        return oneWon, twoWon, draws

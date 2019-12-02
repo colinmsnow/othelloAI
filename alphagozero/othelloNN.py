@@ -37,10 +37,13 @@ The CNN has:
 class OthelloNNet(nn.Module):
     #TODO: make sure game has .getBoardSize() and .getActionSize()
     def __init__(self, game, args):
+        super(OthelloNNet, self).__init__()
         # game params
         # self.board_x, self.board_y = game.getBoardSize()
         self.board_x, self.board_y = 8,8
         self.args = args
+        # self.action_size = game.getActionSize()
+        self.action_size = len(game.moves)
 
         #TODO: Look into args and figure out .num_channels()
         #Args 
@@ -81,4 +84,4 @@ class OthelloNNet(nn.Module):
         pi = self.fc3(s)                                                                         # batch_size x action_size
         v = self.fc4(s)                                                                          # batch_size x 1
 
-return F.log_softmax(pi, dim=1), torch.tanh(v)
+        return F.log_softmax(pi, dim=1), torch.tanh(v)
