@@ -2,13 +2,13 @@
 import sys
 sys.path.append(".")
 
-import statistics
-
 # Bad but works
 import warnings
 warnings.filterwarnings("ignore")
 
 
+import statistics
+from sklearn.linear_model import LinearRegression
 
 
 import gym
@@ -27,10 +27,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as T
 
-from sklearn.linear_model import LinearRegression
-
 import crunner
 
+# %matplotlib inline
 
 
 env = crunner.Move() #Othello game
@@ -43,11 +42,10 @@ is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
     from IPython import display
 
-plt.ion()
+# plt.ion()
 
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -96,7 +94,11 @@ class DQN(nn.Module):
         self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 256, kernel_size=2, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(256)
-        self.fcl = nn.Linear(25600,64)
+        self.conv3 = nn.Conv2d(256, 256, kernel_size=2, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(256)
+        self.fcl1 = nn.Linear(30976,10000)
+        self.fcl2 = nn.Linear(10000, 1000)
+        self.fcl3 = nn.Linear(1000,64)
 
 
 
@@ -108,11 +110,14 @@ class DQN(nn.Module):
         # print(x)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
         # x = F.relu(self.bn2(self.conv2(x)))
         # x = F.relu(self.bn3(self.conv3(x)))
-        x = x.view(-1, 25600)
+        x = x.view(-1, 30976)
         # print(x)
-        x = F.relu(self.fcl(x))
+        x = F.relu(self.fcl1(x))
+        x = F.relu(self.fcl2(x))
+        x = F.relu(self.fcl3(x))
         # return self.head(x.view(x.size(0), -1))
         # print(x)
         return x
@@ -217,7 +222,7 @@ def select_action(state, env):
             possibleMoves = env.state()[2]
             # print(possibleMoves)
             # print(policynet[0])
-            testlist = [policynet[0][i].data.numpy() for i in possibleMoves]
+            # testlist = [policynet[0][i].data.cpu().numpy() for i in possibleMoves]
             # print(testlist)
             possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
             # print('possible policy is')
@@ -225,7 +230,7 @@ def select_action(state, env):
 
             # policymax =  possiblepolicy.max(1)[1].view(1, 1)
             # policymax =  possiblepolicy.max(1)[1]
-            value , index = possiblepolicy.max(0)
+            _, index = possiblepolicy.max(0)
             # print(value)
             # print(index)
 
@@ -243,23 +248,25 @@ episode_durations = []
 
 
 def plot_durations():
-    plt.figure(2)
-    plt.clf()
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    plt.title('Training...')
-    plt.xlabel('Episode')
-    plt.ylabel('Score')
-    plt.plot(durations_t.numpy())
-    # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-        means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
+    # plt.figure(2)
+    # plt.clf()
+    # durations_t = torch.tensor(episode_durations, dtype=torch.float)
+    # plt.title('Training...')
+    # plt.xlabel('Episode')
+    # plt.ylabel('Score')
+    # plt.plot(durations_t.numpy())
+    # plt.show()
+    # # Take 100 episode averages and plot them too
+    # if len(durations_t) >= 100:
+    #     means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+    #     means = torch.cat((torch.zeros(99), means))
+    #     plt.plot(means.numpy())
 
-    plt.pause(0.001)  # pause a bit so that plots are updated
-    if is_ipython:
-        display.clear_output(wait=True)
-        display.display(plt.gcf())
+    # plt.pause(0.001)  # pause a bit so that plots are updated
+    # if is_ipython:
+    #     display.clear_output(wait=True)
+    #     display.display(plt.gcf())
+    pass
 
 
 
@@ -318,7 +325,6 @@ def optimize_model():
 num_episodes = 10
 comp_scores = []
 user_scores = []
-
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
@@ -328,8 +334,7 @@ for i_episode in range(num_episodes):
     # print(state)
     for t in count():
         # Select and perform an action
-        action = select_action(state, env)
-        # print(action)
+        action = select_action(state, env).to(device)
         _,_,_, score, finished = env.make_move(action.item())
         reward = float(score[1])
         # print(reward)
@@ -382,11 +387,9 @@ for i_episode in range(num_episodes):
             episode_durations.append(reward)
             plot_durations()
             # print(env.state()[0])
-
-            if num_episodes -  i_episode <= 100:
-                comp_scores.append(score[0])
-                user_scores.append(score[1])
-            
+            # if num_episodes -  i_episode <= 100:
+            comp_scores.append(score[0])
+            user_scores.append(score[1])
             break
 
         optimize_model()
@@ -397,7 +400,107 @@ for i_episode in range(num_episodes):
 
 
 
+
 print('Complete')
+
+torch.save(policy_net.state_dict(), 'state_dict_final.pyt')
+
+def new_select_action(state, env):
+    global steps_done
+    sample = random.random()
+    # eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+    #     math.exp(-1. * steps_done / EPS_DECAY)
+    # steps_done += 1
+    if sample > .1:
+        with torch.no_grad():
+            # t.max(1) will return largest column value of each row.
+            # second column on max result is index of where max element was
+            # found, so we pick action with the larger expected reward.
+            policynet = policy_net(state)
+            possibleMoves = env.state()[2]
+            # print(possibleMoves)
+            # print(policynet[0])
+            # testlist = [policynet[0][i].data.cpu().numpy() for i in possibleMoves]
+            # print(testlist)
+            possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
+            # print('possible policy is')
+            # print(possiblepolicy)
+
+            # policymax =  possiblepolicy.max(1)[1].view(1, 1)
+            # policymax =  possiblepolicy.max(1)[1]
+            _, index = possiblepolicy.max(0)
+            # print(value)
+            # print(index)
+
+            policymax = torch.tensor([[possibleMoves[index]]])
+            # print(policymax)
+
+
+            return policymax
+    else:
+        # print("random")
+        return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+
+
+        # return policymax
+
+def new_evaluate_model(iterations):
+    
+    policy_net.load_state_dict(torch.load('state_dict_final.pyt'))
+    policy_net.eval()
+
+    num_episodes = 10
+    comp_scores = []
+    user_scores = []
+    for i in range(iterations):
+
+        # Initialize the environment and state
+        env.reset()
+        last_screen = get_screen()
+        current_screen = get_screen()
+        state = current_screen
+
+        for t in count():
+
+            action = new_select_action(state, env).to(device)
+            _,_,_, score, finished = env.make_move(action.item())
+            reward = float(score[1])
+            # print(reward)
+            reward = torch.tensor([reward], device=device)
+
+            # Observe new state
+            last_screen = current_screen
+            current_screen = get_screen()
+            memory.push(state, action, next_state, reward)
+            if finished:
+                print(score)
+                episode_durations.append(reward)
+                plot_durations()
+                # print(env.state()[0])
+                # if num_episodes -  i_episode <= 100:
+                comp_scores.append(score[0])
+                user_scores.append(score[1])
+                break
+    
+    wins = sum([comp_scores[i] < user_scores[i] for i in range(len(comp_scores))])
+    user_average = statistics.mean(user_scores)
+    standard_deviation = statistics.stdev(user_scores)
+
+    vert = np.array(user_scores).reshape((-1, 1))
+    horiz = np.array(range(len(user_scores))).reshape((-1, 1))
+    model = LinearRegression().fit(horiz, vert)
+
+    print('intercept:', model.intercept_)
+    print('slope:', model.coef_)
+
+
+    print("AI won " + str(wins) + " games out of " + str(len(user_scores)))
+    print("AI average was " + str(user_average) )
+    print("AI stdev was " + str(standard_deviation) )
+
+    print(user_scores)
+
+    
 
 wins = sum([comp_scores[i] < user_scores[i] for i in range(len(comp_scores))])
 user_average = statistics.mean(user_scores)
@@ -414,8 +517,22 @@ print('slope:', model.coef_)
 print("AI won " + str(wins) + " games out of " + str(len(user_scores)))
 print("AI average was " + str(user_average) )
 print("AI stdev was " + str(standard_deviation) )
-# plt.ioff()
+
+print(user_scores)
+
+
+new_evaluate_model(10)
+
+
+
+
+# def s(iterations):
+
+
+
+# plt.plot(horiz, vert)
 # plt.show()
+
 
 
 
