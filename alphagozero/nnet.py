@@ -9,7 +9,7 @@ import sys
 sys.path.append('../../')
 from utils import *
 from pytorch_classification.utils import Bar, AverageMeter
-from NeuralNet import NeuralNet
+# from NeuralNet import NeuralNet
 
 import argparse
 import torch
@@ -30,9 +30,9 @@ args = dotdict({
     'num_channels': 512,
 })
 
-class NNetWrapper(NeuralNet):
+class NNetWrapper():
     def __init__(self, game):
-        super(NNetWrapper, self).__init__(game)
+        super(NNetWrapper, self).__init__()
         self.nnet = onnet(game, args)
         self.board_x, self.board_y = 8, 8
         # self.action_size = game.getActionSize()
