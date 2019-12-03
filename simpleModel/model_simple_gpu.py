@@ -178,11 +178,18 @@ env.reset()
 
 
 
+# BATCH_SIZE = 128
+# GAMMA = 0.999
+# EPS_START = 0.9
+# EPS_END = 0.05
+# EPS_DECAY = 200
+# TARGET_UPDATE = 10
+
 BATCH_SIZE = 128
 GAMMA = 0.999
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 200
+EPS_START = 1
+EPS_END = 0.025
+EPS_DECAY = 20
 TARGET_UPDATE = 10
 
 # Get screen size so that we can initialize layers correctly based on shape
@@ -208,6 +215,9 @@ steps_done = 0
 
 
 def select_action(state, env):
+    """Model is selecting action based on max of available.
+    we want it to select the max of the board, and not proceed until it chooses one of the available ones """
+    
     global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
@@ -219,6 +229,7 @@ def select_action(state, env):
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             policynet = policy_net(state)
+            print(policynet)
             possibleMoves = env.state()[2]
             # print(possibleMoves)
             # print(policynet[0])
@@ -233,7 +244,7 @@ def select_action(state, env):
             _, index = possiblepolicy.max(0)
             # print(value)
             # print(index)
-
+            print(possibleMoves[index])
             policymax = torch.tensor([[possibleMoves[index]]])
             # print(policymax)
 
@@ -322,7 +333,7 @@ def optimize_model():
 
 
 
-num_episodes = 10
+num_episodes = 40
 comp_scores = []
 user_scores = []
 for i_episode in range(num_episodes):
@@ -411,7 +422,7 @@ def new_select_action(state, env):
     # eps_threshold = EPS_END + (EPS_START - EPS_END) * \
     #     math.exp(-1. * steps_done / EPS_DECAY)
     # steps_done += 1
-    if sample > .1:
+    if sample > .025:
         with torch.no_grad():
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
