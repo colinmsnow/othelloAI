@@ -110,6 +110,7 @@ class NNetWrapper():
 
     """
     def __init__(self, game):
+        super(NNetWrapper, self).__init__()
         self.nnet = OthelloNNet(game, args)
         self.board_x, self.board_y = 8, 8
         self.action_size = game.getActionSize #TODO: implement getActionSize
@@ -189,7 +190,7 @@ class NNetWrapper():
         """
 
         #timing
-        start = time.time()
+        #start = time.time()
 
         #preparing input
         board = torch.FloatTensor(board.astype(np.float64))
