@@ -92,13 +92,15 @@ class DQN(nn.Module):
         # linear_input_size = convw * convh * 32
         self.conv1 = nn.Conv2d(1, 16, kernel_size=2, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 256, kernel_size=2, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(256)
-        self.conv3 = nn.Conv2d(256, 256, kernel_size=2, stride=1, padding=1)
-        self.bn3 = nn.BatchNorm2d(256)
-        self.fcl1 = nn.Linear(30976,10000)
-        self.fcl2 = nn.Linear(10000, 1000)
-        self.fcl3 = nn.Linear(1000,64)
+        # self.conv2 = nn.Conv2d(16, 256, kernel_size=2, stride=1, padding=1)
+        # self.bn2 = nn.BatchNorm2d(256)
+        # self.conv3 = nn.Conv2d(256, 256, kernel_size=2, stride=1, padding=1)
+        # self.bn3 = nn.BatchNorm2d(256)
+        # self.fcl1 = nn.Linear(30976,10000)
+        # self.fcl2 = nn.Linear(10000, 1000)
+        # self.fcl3 = nn.Linear(1000,64)
+        self.fcl1 = nn.Linear(1296,10000)
+        self.fcl2 = nn.Linear(10000, 64)
 
 
 
@@ -109,15 +111,20 @@ class DQN(nn.Module):
     def forward(self, x):
         # print(x)
         x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
+        
         # x = F.relu(self.bn2(self.conv2(x)))
         # x = F.relu(self.bn3(self.conv3(x)))
-        x = x.view(-1, 30976)
-        # print(x)
+
+        # x = x.view(-1, 30976)
+
+        # x = F.relu(self.fcl1(x))
+        # x = F.relu(self.fcl2(x))
+        # x = F.relu(self.fcl3(x))
+        
+        x = x.view(-1, 1296)
         x = F.relu(self.fcl1(x))
         x = F.relu(self.fcl2(x))
-        x = F.relu(self.fcl3(x))
+
         # return self.head(x.view(x.size(0), -1))
         # print(x)
         return x
@@ -189,7 +196,7 @@ BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 1
 EPS_END = 0.025
-EPS_DECAY = 20
+EPS_DECAY = 30
 TARGET_UPDATE = 10
 
 # Get screen size so that we can initialize layers correctly based on shape
@@ -217,7 +224,7 @@ steps_done = 0
 def select_action(state, env):
     """Model is selecting action based on max of available.
     we want it to select the max of the board, and not proceed until it chooses one of the available ones """
-    
+
     global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
@@ -229,7 +236,7 @@ def select_action(state, env):
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             policynet = policy_net(state)
-            print(policynet)
+            # print(policynet)
             possibleMoves = env.state()[2]
             # print(possibleMoves)
             # print(policynet[0])
@@ -238,18 +245,42 @@ def select_action(state, env):
             possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
             # print('possible policy is')
             # print(possiblepolicy)
+            policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
 
-            # policymax =  possiblepolicy.max(1)[1].view(1, 1)
+            policynet = [policynet[i] if i in possibleMoves else 0 for i in range(64)]
+            # print(policynet)
+            policynet = np.array(policynet)
+            policynet = policynet / np.sum(policynet)
+            # print(policynet)
+            if math.isnan(policynet[0]):
+                print('got nan')
+                return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+            else:
+                policymax = np.random.choice(64, p=policynet)
+                # print(policymax)
+
+            return torch.tensor([[policymax]], device=device, dtype=torch.long)
             # policymax =  possiblepolicy.max(1)[1]
-            _, index = possiblepolicy.max(0)
-            # print(value)
-            # print(index)
-            print(possibleMoves[index])
-            policymax = torch.tensor([[possibleMoves[index]]])
+            # _, index = possiblepolicy.max(0)
+            # # print(value)
+            # # print(index)
+            # print(possibleMoves[index])
+            # policymax = torch.tensor([[possibleMoves[index]]])
             # print(policymax)
 
+            # if policymax.item() in possibleMoves:
+            #     print("chosen")
+            #     return torch.tensor([[policymax]])
+            # else:
+            #     # return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+            #     print("Bad Move")
+            #     reward = float(-1000)
+            #     reward = torch.tensor([reward], device=device)
+            #     memory.push(state, action, next_state, reward)
+            #     optimize_model()
+            #     target_net.load_state_dict(policy_net.state_dict())
+        # return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
 
-            return policymax
     else:
         # print("random")
         return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
@@ -315,10 +346,17 @@ def optimize_model():
     # on the "older" target_net; selecting their best reward with max(1)[0].
     # This is merged based on the mask, such that we'll have either the expected
     # state value or 0 in case the state was final.
-    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values = torch.ones(BATCH_SIZE, device=device)
     next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+
+    # print('rewards:')
+    # print(reward_batch)
+    # print('sav:')
+    # print(state_action_values)
+    # print('esav:')
+    # print(expected_state_action_values)
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
@@ -333,7 +371,7 @@ def optimize_model():
 
 
 
-num_episodes = 40
+num_episodes = 100
 comp_scores = []
 user_scores = []
 for i_episode in range(num_episodes):
@@ -345,6 +383,7 @@ for i_episode in range(num_episodes):
     # print(state)
     for t in count():
         # Select and perform an action
+        
         action = select_action(state, env).to(device)
         _,_,_, score, finished = env.make_move(action.item())
         reward = float(score[1])
@@ -416,18 +455,30 @@ print('Complete')
 
 torch.save(policy_net.state_dict(), 'state_dict_final.pyt')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def new_select_action(state, env):
-    global steps_done
-    sample = random.random()
-    # eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-    #     math.exp(-1. * steps_done / EPS_DECAY)
-    # steps_done += 1
-    if sample > .025:
-        with torch.no_grad():
+    with torch.no_grad():
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             policynet = policy_net(state)
+            # print(policynet)
             possibleMoves = env.state()[2]
             # print(possibleMoves)
             # print(policynet[0])
@@ -436,21 +487,20 @@ def new_select_action(state, env):
             possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
             # print('possible policy is')
             # print(possiblepolicy)
+            policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
 
-            # policymax =  possiblepolicy.max(1)[1].view(1, 1)
-            # policymax =  possiblepolicy.max(1)[1]
-            _, index = possiblepolicy.max(0)
-            # print(value)
-            # print(index)
+            policynet = [policynet[i] if i in possibleMoves else 0 for i in range(64)]
+            # print(policynet)
+            policynet = np.array(policynet)
+            policynet = policynet / np.sum(policynet)
+            # print(policynet)
+            if math.isnan(policynet[0]):
+                return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+            else:
+                policymax = np.random.choice(64, p=policynet)
+                # print(policymax)
 
-            policymax = torch.tensor([[possibleMoves[index]]])
-            # print(policymax)
-
-
-            return policymax
-    else:
-        # print("random")
-        return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+            return torch.tensor([[policymax]], device=device, dtype=torch.long)
 
 
         # return policymax
