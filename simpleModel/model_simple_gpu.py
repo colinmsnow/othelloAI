@@ -70,7 +70,19 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
-
+    def update_memory(self, score, num_iterations):
+        print('Updating Memory')
+        # print('Score is: ' + str(score))
+        # self.memory[len(self.memory)-num_iterations:].reward = \
+        #      np.array([self.memory[len(self.memory)-num_iterations:].reward.data.cpu().numpy().flatten()])[0]
+        for i in range (num_iterations):
+            # print('old memory: ' + str(self.memory[len(self.memory)-1-i].reward))
+            # print(type(np.array([self.memory[len(self.memory)-1-i].reward.data.cpu().numpy().flatten()])[0]))
+            # print(type(score))
+            new_reward = np.array([self.memory[len(self.memory)-1-i].reward.data.cpu().numpy().flatten()])[0] + score
+            self.memory[len(self.memory)-1-i] = Transition(self.memory[len(self.memory)-1-i].state,self.memory[len(self.memory)-1-i].action, self.memory[len(self.memory)-1-i].next_state, torch.tensor([[new_reward]], device=device, dtype=torch.long))
+            # print()
+            # print('new memory: ' + str(self.memory[len(self.memory)-1-i].reward))
 
 class DQN(nn.Module):
 
@@ -90,17 +102,32 @@ class DQN(nn.Module):
         # convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
         # convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
         # linear_input_size = convw * convh * 32
+
+
+
+        # self.conv1 = nn.Conv2d(1, 128, kernel_size=2, stride=1, padding=1)
+        # self.bn1 = nn.BatchNorm2d(128)
+        # self.conv2 = nn.Conv2d(128, 256, kernel_size=5, stride=1, padding=1)
+        # self.bn2 = nn.BatchNorm2d(256)
+        # self.fcl1 = nn.Linear(12544,10000)
+        # self.fcl2 = nn.Linear(10000, 64)
+
+        # self.conv1 = nn.Conv2d(1, 256, kernel_size=2, stride=1, padding=1)
+        # self.bn1 = nn.BatchNorm2d(256)
+        # self.fcl1 = nn.Linear(20736,10000)
+        # self.fcl2 = nn.Linear(10000, 64)
+
         self.conv1 = nn.Conv2d(1, 16, kernel_size=2, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(16)
-        # self.conv2 = nn.Conv2d(16, 256, kernel_size=2, stride=1, padding=1)
-        # self.bn2 = nn.BatchNorm2d(256)
-        # self.conv3 = nn.Conv2d(256, 256, kernel_size=2, stride=1, padding=1)
-        # self.bn3 = nn.BatchNorm2d(256)
-        # self.fcl1 = nn.Linear(30976,10000)
-        # self.fcl2 = nn.Linear(10000, 1000)
-        # self.fcl3 = nn.Linear(1000,64)
-        self.fcl1 = nn.Linear(1296,10000)
-        self.fcl2 = nn.Linear(10000, 64)
+        self.conv2 = nn.Conv2d(16, 256, kernel_size=2, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(256)
+        self.conv3 = nn.Conv2d(256, 256, kernel_size=2, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(256)
+        self.fcl1 = nn.Linear(30976,10000)
+        self.fcl2 = nn.Linear(10000, 1000)
+        self.fcl3 = nn.Linear(1000,64)
+
+
 
 
 
@@ -110,23 +137,29 @@ class DQN(nn.Module):
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
         # print(x)
-        x = F.relu(self.bn1(self.conv1(x)))
-        
-        # x = F.relu(self.bn2(self.conv2(x)))
-        # x = F.relu(self.bn3(self.conv3(x)))
-
-        # x = x.view(-1, 30976)
-
+        # x = F.relu(self.conv1(x))
+        # x = F.relu(self.conv2(x))
+        # x = x.view(-1, 12544)
         # x = F.relu(self.fcl1(x))
         # x = F.relu(self.fcl2(x))
-        # x = F.relu(self.fcl3(x))
-        
-        x = x.view(-1, 1296)
+
+        # x = F.relu(self.bn1(self.conv1(x)))
+        # # x = F.relu(self.conv2(x))
+        # x = x.view(-1, 20736)
+        # x = F.relu(self.fcl1(x))
+        # x = F.relu(self.fcl2(x))
+
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
+        # x = F.relu(self.bn2(self.conv2(x)))
+        # x = F.relu(self.bn3(self.conv3(x)))
+        x = x.view(-1, 30976)
+        # print(x)
         x = F.relu(self.fcl1(x))
         x = F.relu(self.fcl2(x))
+        x = F.relu(self.fcl3(x))
 
-        # return self.head(x.view(x.size(0), -1))
-        # print(x)
         return x
 
 
@@ -247,9 +280,10 @@ def select_action(state, env):
             # print(possiblepolicy)
             policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
 
-            policynet = [policynet[i] if i in possibleMoves else 0 for i in range(64)]
+            policynet = [policynet[i] if i in possibleMoves else .00001 for i in range(64)]
             # print(policynet)
             policynet = np.array(policynet)
+            # policynet = np.square(policynet)
             policynet = policynet / np.sum(policynet)
             # print(policynet)
             if math.isnan(policynet[0]):
@@ -257,9 +291,17 @@ def select_action(state, env):
                 return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
             else:
                 policymax = np.random.choice(64, p=policynet)
+                # policymax = np.argmax(policynet)
                 # print(policymax)
+            
+            if policymax in possibleMoves:
+                return torch.tensor([[policymax]], device=device, dtype=torch.long)
 
-            return torch.tensor([[policymax]], device=device, dtype=torch.long)
+            else:
+                print('made random choice')
+                return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
+
+
             # policymax =  possiblepolicy.max(1)[1]
             # _, index = possiblepolicy.max(0)
             # # print(value)
@@ -311,11 +353,10 @@ def plot_durations():
     pass
 
 
-
-
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
+    # print('Memory length: ' + str(len(memory)))
     transitions = memory.sample(BATCH_SIZE)
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
@@ -360,6 +401,7 @@ def optimize_model():
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+    # print(loss)
 
     # Optimize the model
     optimizer.zero_grad()
@@ -381,7 +423,7 @@ for i_episode in range(num_episodes):
     current_screen = get_screen()
     state = current_screen
     # print(state)
-    for t in count():
+    for t in count(1):
         # Select and perform an action
         
         action = select_action(state, env).to(device)
@@ -389,6 +431,9 @@ for i_episode in range(num_episodes):
         reward = float(score[1])
         # print(reward)
         reward = torch.tensor([reward], device=device)
+
+        # reward = torch.tensor([0], device=device)
+        # reward = 0
 
         # Observe new state
         last_screen = current_screen
@@ -433,6 +478,12 @@ for i_episode in range(num_episodes):
         # Perform one step of the optimization (on the target network)
         
         if finished:
+            # reward_add = int(score[1] > score[0]) * 100
+            if score[1] > score[0]:
+                reward_add = 10000
+            else:
+                reward_add = 0
+            memory.update_memory(reward_add, t)
             print(score)
             episode_durations.append(reward)
             plot_durations()
@@ -442,7 +493,7 @@ for i_episode in range(num_episodes):
             user_scores.append(score[1])
             break
 
-        optimize_model()
+    optimize_model()
     
     # Update the target network, copying all weights and biases in DQN
     if i_episode % TARGET_UPDATE == 0:
@@ -454,6 +505,11 @@ for i_episode in range(num_episodes):
 print('Complete')
 
 torch.save(policy_net.state_dict(), 'state_dict_final.pyt')
+
+
+
+
+print(memory.sample(100))
 
 
 
@@ -492,14 +548,17 @@ def new_select_action(state, env):
             policynet = [policynet[i] if i in possibleMoves else 0 for i in range(64)]
             # print(policynet)
             policynet = np.array(policynet)
+            policynet = np.square(policynet)
             policynet = policynet / np.sum(policynet)
             # print(policynet)
             if math.isnan(policynet[0]):
                 return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
             else:
                 policymax = np.random.choice(64, p=policynet)
+                # policymax = np.argmax(policynet)
                 # print(policymax)
 
+            # return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
             return torch.tensor([[policymax]], device=device, dtype=torch.long)
 
 
@@ -510,7 +569,7 @@ def new_evaluate_model(iterations):
     policy_net.load_state_dict(torch.load('state_dict_final.pyt'))
     policy_net.eval()
 
-    num_episodes = 10
+    num_episodes = 100
     comp_scores = []
     user_scores = []
     for i in range(iterations):
@@ -582,7 +641,7 @@ print("AI stdev was " + str(standard_deviation) )
 print(user_scores)
 
 
-new_evaluate_model(10)
+new_evaluate_model(100)
 
 
 

@@ -44,6 +44,7 @@ class ReplayMemory(object):
         if len(self.memory) < self.capacity:
             self.memory.append(None)
         self.memory[self.position] = Transition(*args)
+        test = np.array([self.memory[len(self.memory)-1:].reward.data.cpu().numpy().flatten()])[0]
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
