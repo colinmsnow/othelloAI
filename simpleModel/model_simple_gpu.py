@@ -10,7 +10,6 @@ warnings.filterwarnings("ignore")
 import statistics
 from sklearn.linear_model import LinearRegression
 
-
 import gym
 import math
 import random
@@ -29,20 +28,14 @@ import torchvision.transforms as T
 
 import crunner
 
-# %matplotlib inline
-
 
 env = crunner.Move() #Othello game
-
-
-# env = gym.make('CartPole-v0').unwrapped
 
 # set up matplotlib
 is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
     from IPython import display
 
-# plt.ion()
 
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,6 +45,10 @@ Transition = namedtuple('Transition',
 
 
 class ReplayMemory(object):
+
+    '''
+    Stores (state, action, next state, and reward) for each board setup
+    '''
 
     def __init__(self, capacity):
         self.capacity = capacity
@@ -70,19 +67,18 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
+
     def update_memory(self, score, num_iterations):
+        '''
+        changes reward value based on tree search
+        '''
+
         print('Updating Memory')
-        # print('Score is: ' + str(score))
-        # self.memory[len(self.memory)-num_iterations:].reward = \
-        #      np.array([self.memory[len(self.memory)-num_iterations:].reward.data.cpu().numpy().flatten()])[0]
+        
         for i in range (num_iterations):
-            # print('old memory: ' + str(self.memory[len(self.memory)-1-i].reward))
-            # print(type(np.array([self.memory[len(self.memory)-1-i].reward.data.cpu().numpy().flatten()])[0]))
-            # print(type(score))
+            
             new_reward = np.array([self.memory[len(self.memory)-1-i].reward.data.cpu().numpy().flatten()])[0] + score
             self.memory[len(self.memory)-1-i] = Transition(self.memory[len(self.memory)-1-i].state,self.memory[len(self.memory)-1-i].action, self.memory[len(self.memory)-1-i].next_state, torch.tensor([[new_reward]], device=device, dtype=torch.long))
-            # print()
-            # print('new memory: ' + str(self.memory[len(self.memory)-1-i].reward))
 
 class DQN(nn.Module):
 
@@ -131,7 +127,6 @@ class DQN(nn.Module):
 
 
 
-        # self.head = nn.Linear(linear_input_size, outputs)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
@@ -163,40 +158,8 @@ class DQN(nn.Module):
         return x
 
 
-
-
-
-# resize = T.Compose([T.ToPILImage(),
-#                     T.Resize(40, interpolation=Image.CUBIC),
-#                     T.ToTensor()])
-
-
-
-# def get_cart_location(screen_width):
-#     world_width = env.x_threshold * 2
-#     scale = screen_width / world_width
-#     return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
-
 def get_screen():
-    # Returned screen requested by gym is 400x600x3, but is sometimes larger
-    # such as 800x1200x3. Transpose it into torch order (CHW).
-    # screen = env.render(mode='rgb_array').transpose((2, 0, 1))
-    # # Cart is in the lower half, so strip off the top and bottom of the screen
-    # _, screen_height, screen_width = screen.shape
-    # screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
-    # view_width = int(screen_width * 0.6)
-    # cart_location = get_cart_location(screen_width)
-    # if cart_location < view_width // 2:
-    #     slice_range = slice(view_width)
-    # elif cart_location > (screen_width - view_width // 2):
-    #     slice_range = slice(-view_width, None)
-    # else:
-    #     slice_range = slice(cart_location - view_width // 2,
-    #                         cart_location + view_width // 2)
-    # # Strip off the edges, so that we have a square image centered on a cart
-    # screen = screen[:, :, slice_range]
-    # # Convert to float, rescale, convert to torch tensor
-    # # (this doesn't require a copy)
+    """Returns the current board in an 8 by 8 pytorch tensor"""
 
 
 
@@ -209,11 +172,6 @@ def get_screen():
 
 
 env.reset()
-# plt.figure()
-# plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(),
-#            interpolation='none')
-# plt.title('Example extracted screen')
-# plt.show()
 
 
 
@@ -225,30 +183,32 @@ env.reset()
 # EPS_DECAY = 200
 # TARGET_UPDATE = 10
 
-BATCH_SIZE = 128
-GAMMA = 0.999
-EPS_START = 1
-EPS_END = 0.025
-EPS_DECAY = 30
+BATCH_SIZE = 256
+GAMMA = 0.999 #TODO: understand this
+EPS_START = .9
+EPS_END = 0.05
+EPS_DECAY = 200
 TARGET_UPDATE = 10
 
-# Get screen size so that we can initialize layers correctly based on shape
-# returned from AI gym. Typical dimensions at this point are close to 3x40x90
-# which is the result of a clamped and down-scaled render buffer in get_screen()
+# Gets the inital game state
 init_screen = get_screen()
-screen_height, screen_width = 8,8
+screen_height, screen_width = 8,8 # Board is 8x8 squares
 
-# Get number of actions from gym action space
-# n_actions = len(env.state()[2])
+#Specifies the total number of actions that can be taken
 n_actions = 64
 
+
+#Initialize two networks, one to continuously train and one to select actions
 policy_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net = DQN(screen_height, screen_width, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
-optimizer = optim.RMSprop(policy_net.parameters())
-memory = ReplayMemory(10000)
+#Define optimizer and learnign rate
+optimizer = optim.Adam(policy_net.parameters(), lr=.001)
+
+#Create a memory object which stores the games played
+memory = ReplayMemory(100000)
 
 
 steps_done = 0
@@ -271,21 +231,14 @@ def select_action(state, env):
             policynet = policy_net(state)
             # print(policynet)
             possibleMoves = env.state()[2]
-            # print(possibleMoves)
-            # print(policynet[0])
-            # testlist = [policynet[0][i].data.cpu().numpy() for i in possibleMoves]
-            # print(testlist)
-            possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
-            # print('possible policy is')
-            # print(possiblepolicy)
-            policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
 
+            possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
+
+            policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
             policynet = [policynet[i] if i in possibleMoves else .00001 for i in range(64)]
-            # print(policynet)
             policynet = np.array(policynet)
-            # policynet = np.square(policynet)
             policynet = policynet / np.sum(policynet)
-            # print(policynet)
+
             if math.isnan(policynet[0]):
                 print('got nan')
                 return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
@@ -301,28 +254,6 @@ def select_action(state, env):
                 print('made random choice')
                 return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
 
-
-            # policymax =  possiblepolicy.max(1)[1]
-            # _, index = possiblepolicy.max(0)
-            # # print(value)
-            # # print(index)
-            # print(possibleMoves[index])
-            # policymax = torch.tensor([[possibleMoves[index]]])
-            # print(policymax)
-
-            # if policymax.item() in possibleMoves:
-            #     print("chosen")
-            #     return torch.tensor([[policymax]])
-            # else:
-            #     # return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
-            #     print("Bad Move")
-            #     reward = float(-1000)
-            #     reward = torch.tensor([reward], device=device)
-            #     memory.push(state, action, next_state, reward)
-            #     optimize_model()
-            #     target_net.load_state_dict(policy_net.state_dict())
-        # return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
-
     else:
         # print("random")
         return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
@@ -332,24 +263,6 @@ episode_durations = []
 
 
 def plot_durations():
-    # plt.figure(2)
-    # plt.clf()
-    # durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    # plt.title('Training...')
-    # plt.xlabel('Episode')
-    # plt.ylabel('Score')
-    # plt.plot(durations_t.numpy())
-    # plt.show()
-    # # Take 100 episode averages and plot them too
-    # if len(durations_t) >= 100:
-    #     means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-    #     means = torch.cat((torch.zeros(99), means))
-    #     plt.plot(means.numpy())
-
-    # plt.pause(0.001)  # pause a bit so that plots are updated
-    # if is_ipython:
-    #     display.clear_output(wait=True)
-    #     display.display(plt.gcf())
     pass
 
 
@@ -370,7 +283,8 @@ def optimize_model():
     # print(batch.state)
     # print(batch.state.size())
     non_final_next_states = torch.cat([s for s in batch.next_state
-                                                if s is not None])
+                                               # print(env.state()[0])
+             if s is not None])
     # print(non_final_next_states)
     state_batch = torch.cat(batch.state)
     # print(batch.action)
@@ -401,8 +315,7 @@ def optimize_model():
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-    # print(loss)
-
+    LOSSES.append(loss.cpu().item())
     # Optimize the model
     optimizer.zero_grad()
     loss.backward()
@@ -412,71 +325,39 @@ def optimize_model():
 
 
 
+##### THE GAME #####
 
-num_episodes = 100
+LOSSES = []
+num_episodes = 100 #num games
 comp_scores = []
 user_scores = []
+
+# Gameplay
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
-    last_screen = get_screen()
+    last_screen = get_screen() # retrieve board in pytorch tensor
     current_screen = get_screen()
     state = current_screen
     # print(state)
     for t in count(1):
         # Select and perform an action
-        
+        state = get_screen()
         action = select_action(state, env).to(device)
         _,_,_, score, finished = env.make_move(action.item())
         reward = float(score[1])
         # print(reward)
         reward = torch.tensor([reward], device=device)
 
-        # reward = torch.tensor([0], device=device)
-        # reward = 0
 
-        # Observe new state
-        last_screen = current_screen
-        current_screen = get_screen()
+        next_state = get_screen()
 
-        # if t > 15:
-        #     done == True
-        # else:
-        #     done == False
-        # print(done)
-        # print(current_screen)
-        # print(last_screen)
-        # if not done:
-        #     next_state = current_screen
-        # else:
-        #     next_state = None
-
-        next_state = current_screen
-
-        # Store the transition in memory
-        # print(state)
-        # print(state.size())
-        # print(action)
-        # print(action.size())
-        # print(next_state)
-        # # print(next_state.size())
-        # print(reward)
-        # print(reward.size())
+        #Story the current state, the chosen action, the next state and the reward for that state in memory
         memory.push(state, action, next_state, reward)
-
-        # Move to the next state
-        state = next_state
-
-        # print(state)
-        # print(reward)
-        # print(finished)
-        # print(type(finished))
-
-
-        # print(env.state()[0])
 
         # Perform one step of the optimization (on the target network)
         
+        # Reward time
         if finished:
             # reward_add = int(score[1] > score[0]) * 100
             if score[1] > score[0]:
@@ -489,10 +370,13 @@ for i_episode in range(num_episodes):
             plot_durations()
             # print(env.state()[0])
             # if num_episodes -  i_episode <= 100:
+            
+            #Save the scores of user and computer
             comp_scores.append(score[0])
             user_scores.append(score[1])
             break
 
+    print('Episode ' + str(i_episode) + ' out of ' + str(num_episodes))
     optimize_model()
     
     # Update the target network, copying all weights and biases in DQN
@@ -507,12 +391,9 @@ print('Complete')
 torch.save(policy_net.state_dict(), 'state_dict_final.pyt')
 
 
+print(LOSSES)
 
-
-print(memory.sample(100))
-
-
-
+print(memory.sample(10))
 
 
 
@@ -521,6 +402,9 @@ print(memory.sample(100))
 
 
 
+
+
+# Stuff velow here is for analysis only!!!
 
 
 
@@ -569,7 +453,7 @@ def new_evaluate_model(iterations):
     policy_net.load_state_dict(torch.load('state_dict_final.pyt'))
     policy_net.eval()
 
-    num_episodes = 100
+    num_episodes = 10
     comp_scores = []
     user_scores = []
     for i in range(iterations):
