@@ -10,7 +10,7 @@ Reinforcement learning is a type of machine learning that focuses on the ability
 
 The overall flow of information in a reinforcement learning model, as can be seen in Figure 1, is a feedback loop between the “Agent” and the “Environment” that the “Agent” exists in. Based on observations of the environment, the agent will make a decision on actions to make, which will update the environment’s state. The new environment will be observed, along with a reward that quantifies whether that action was favorable.  In the context of the board game Othello, the “Agent” is the player, the “Environment” is the current board state, the action is the move the player makes on their turn, and the reward corresponds to whether that move brings the player closer to winning. 
 
-![Othello AI System Diagram](images/system.png)
+![Othello AI System Diagram](images/reinforcement-learning-fig1-700.jpg)
 
 Figure 1: General flow diagram for reinforcement learning models. The agent makes an action in the environment, and that action results in a new environment state and a given reward depending on how favorable that action was. Source: [KDnuggets](https://www.kdnuggets.com/2018/03/5-things-reinforcement-learning.html)
 
@@ -23,6 +23,10 @@ One of the major drawbacks of RL is the amount of time it takes to train a model
 ## Model
 
 The key goal of our project was to create a program that could play Othello without any previous knowledge of the rules, mechanics, or strategies that are fundamental to the way humans play the game. We wanted to observe how well our algorithm could adapt given these limitations and compare performance levels to that of human players. We pushed this naive model to the extreme by only feeding it with the current board state and asking it to choose a move without providing the context of previous or future moves. This lack of information naturally prevents the algorithm from discovering all of the possible strategies in the game, but despite this, it is able to grow to learn many of the subtleties of the game that experienced players often use.
+
+![System Diagram of Neural Network](images/system.jpg)
+
+Figure 2: Network diagram of neural network with labels and weights labeled.
 
 Our program learns by playing another pre-existing algorithm that uses a deep Monte Carlo game tree as well as several human-coded strategies to select moves. This means that the training algorithm has access to much more information than our model, and serves as a proxy for a very experienced opponent.
 
@@ -40,7 +44,13 @@ A common problem in RL occurs when the model repeatedly follows the same path wi
 
 ## Results
 
+![Loss Graph](images/results.png)
+
+Figure 3: Loss over number of games played. The model continues to train as new data is generated, even though the loss does not
+decrease.
+
 After 200 games against the existing algorithm, our model increased its score by 2.5 points per game and was able to beat the existing model about 30% of the time. This success rate correlates to the skill of a relatively experienced player, but it is certainly no match against an expert. Based on these results, we can conclude that a totally naive model such as this can learn to play the game and make strategic decisions based on relatively little information, but that it is limited in skill by both the amount of training data that can be reasonably acquired without vast computational resources and by the amount of information that can be encoded into only the current board state.
+
 
 ## Using the Model
 
