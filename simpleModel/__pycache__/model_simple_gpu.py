@@ -84,6 +84,7 @@ class DQN(nn.Module):
 
     def __init__(self, h, w, outputs):
         super(DQN, self).__init__()
+        #1
         # self.conv1 = nn.Conv2d(1, 16, kernel_size=5, stride=2)
         # self.bn1 = nn.BatchNorm2d(16)
         # self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
@@ -91,6 +92,7 @@ class DQN(nn.Module):
         # self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
         # self.bn3 = nn.BatchNorm2d(32)
 
+        #2
         # # Number of Linear input connections depends on output of conv2d layers
         # # and therefore the input image size, so compute it.
         # def conv2d_size_out(size, kernel_size = 5, stride = 2):
@@ -100,19 +102,21 @@ class DQN(nn.Module):
         # linear_input_size = convw * convh * 32
 
 
-
+        #3
         # self.conv1 = nn.Conv2d(1, 128, kernel_size=2, stride=1, padding=1)
         # self.bn1 = nn.BatchNorm2d(128)
         # self.conv2 = nn.Conv2d(128, 256, kernel_size=5, stride=1, padding=1)
         # self.bn2 = nn.BatchNorm2d(256)
-        # self.fcl1 = nn.Linear(12544,10000)
-        # self.fcl2 = nn.Linear(10000, 64)
+        # self.fcl1 = nn.Linear(12544,5000)
+        # self.fcl2 = nn.Linear(5000, 64)
 
-        # self.conv1 = nn.Conv2d(1, 256, kernel_size=2, stride=1, padding=1)
-        # self.bn1 = nn.BatchNorm2d(256)
-        # self.fcl1 = nn.Linear(20736,10000)
-        # self.fcl2 = nn.Linear(10000, 64)
+        #4
+        self.conv1 = nn.Conv2d(1, 256, kernel_size=2, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(256)
+        self.fcl1 = nn.Linear(20736,10000)
+        self.fcl2 = nn.Linear(10000, 64)
 
+        #5
         # Big Boi
         # self.conv1 = nn.Conv2d(1, 16, kernel_size=2, stride=1, padding=1)
         # self.bn1 = nn.BatchNorm2d(16)
@@ -124,27 +128,34 @@ class DQN(nn.Module):
         # self.fcl2 = nn.Linear(10000, 1000)
         # self.fcl3 = nn.Linear(1000,64)
 
-
+        #6
         # #Goldilocks et al. - won 43% (once)
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
-        self.bn1   = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 256, kernel_size=3, stride=1, padding=1)
-        self.bn2   = nn.BatchNorm2d(256)
-        self.fc1   = nn.Linear(16384, 512)
-        self.fc2   = nn.Linear(512, 256)
-        self.fc3   = nn.Linear(256, 64)
+        # self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
+        # self.bn1   = nn.BatchNorm2d(16)
+        # # self.conv2 = nn.Conv2d(16, 256, kernel_size=3, stride=1, padding=1)
+        # # self.bn2   = nn.BatchNorm2d(256)
+        # self.fc1   = nn.Linear(1024, 5        # x = F.relu(self.bn1(self.conv1(x)))
+        # x = F.relu(self.bn2(self.conv2(x)))
+        # x = x.view(-1, 12544)
+        # x = F.relu(self.fcl1(x))
+        # x = F.log_softmax(self.fcl2(x))12)
+        # self.fc2   = nn.Linear(512, 256)
+        # self.fc3   = nn.Linear(256, 64)
 
-
+        #7
         # self.conv1 = nn.Conv2d(1, 64, kernel_size=2, stride=1, padding=1)
         # self.bn1 = nn.BatchNorm2d(64)
         # self.fcl1 = nn.Linear(5184,2000)
         # self.fcl2 = nn.Linear(2000, 64)
 
-        
+        #8
         # Puny
         # self.conv1 = nn.Conv2d(1, 16, kernel_size=2, stride=1, padding=1)
         # self.bn1 = nn.BatchNorm2d(16)
-        # self.fcl1 = nn.Linear(1296,64)
+        # # self.fcl1 = nn.Linear(1296,64)
+
+        # self.fcl1 = nn.Linear(1296,500)
+        # self.fcl2 = nn.Linear(500, 64)
 
 
 
@@ -182,16 +193,24 @@ class DQN(nn.Module):
         # x = F.relu(self.fcl1(x))
         # x = F.relu(self.fcl2(x))
 
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = x.view(-1, 16384)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
+        # x = F.relu(self.bn1(self.conv1(x)))
+        # # x = F.relu(self.bn2(self.conv2(x)))
+        # x = x.view(-1, 1024)
+        # x = F.relu(self.fc1(x))
+        # x = F.relu(self.fc2(x))
+        # x = F.relu(self.fc3(x))
 
         # x = F.relu(self.bn1(self.conv1(x)))
-        # x = x.view(-1, 1296)
-        # x = F.log_softmax(self.fcl1(x))
+        # x = F.relu(self.bn2(self.conv2(x)))
+        # x = x.view(-1, 12544)
+        # x = F.relu(self.fcl1(x))
+        # x = F.log_softmax(self.fcl2(x))
+
+
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = x.view(-1, 20736)
+        x = F.relu(self.fcl1(x))
+        x = F.log_softmax(self.fcl2(x))
 
         return x
 
@@ -221,12 +240,12 @@ env.reset()
 # EPS_DECAY = 200
 # TARGET_UPDATE = 10
 
-BATCH_SIZE = 128
+BATCH_SIZE = 512
 GAMMA = 0.999 #TODO: understand this
 EPS_START = .9
 EPS_END = 0.05
 EPS_DECAY = 200
-TARGET_UPDATE = 100
+TARGET_UPDATE = 20
 
 # Gets the inital game state
 init_screen = get_screen()
@@ -243,7 +262,7 @@ target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
 #Define optimizer and learnign rate
-optimizer = optim.Adam(policy_net.parameters(), lr= 1e-3)
+optimizer = optim.Adam(policy_net.parameters(), lr= 1e-8)
 
 #Create a memory object which stores the games played
 memory = ReplayMemory(100000)
@@ -307,6 +326,7 @@ def plot_durations():
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
+    # print('optimizing')
     # print('Memory length: ' + str(len(memory)))
     transitions = memory.sample(BATCH_SIZE)
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
@@ -365,7 +385,7 @@ def optimize_model():
 ##### THE GAME #####
 
 LOSSES = []
-num_episodes = 100 #num games
+num_episodes = 200 #num games
 comp_scores = []
 user_scores = []
 
@@ -414,6 +434,7 @@ for i_episode in range(num_episodes):
             break
 
     print('Episode ' + str(i_episode) + ' out of ' + str(num_episodes))
+
     optimize_model()
     
     # Update the target network, copying all weights and biases in DQN
@@ -422,15 +443,6 @@ for i_episode in range(num_episodes):
 
 
 
-
-print('Complete')
-
-torch.save(policy_net.state_dict(), 'state_dict_final.pyt')
-
-
-print(LOSSES)
-
-print(memory.sample(10))
 
 print('Complete')
 
