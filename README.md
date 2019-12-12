@@ -1,3 +1,4 @@
+![OthelloAI](images/banner.png)
 OthelloAI: Utilizing Reinforcement Learning to Win the Game Othello
 Megan Ku and Colin Snow
 Machine Learning Final Project Fall 2019
