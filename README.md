@@ -24,7 +24,7 @@ One of the major drawbacks of RL is the amount of time it takes to train a model
 
 The key goal of our project was to create a program that could play Othello without any previous knowledge of the rules, mechanics, or strategies that are fundamental to the way humans play the game. We wanted to observe how well our algorithm could adapt given these limitations and compare performance levels to that of human players. We pushed this naive model to the extreme by only feeding it with the current board state and asking it to choose a move without providing the context of previous or future moves. This lack of information naturally prevents the algorithm from discovering all of the possible strategies in the game, but despite this, it is able to grow to learn many of the subtleties of the game that experienced players often use.
 
-![System Diagram of Neural Network](images/system.jpg)
+![System Diagram of Neural Network](images/system.png)
 
 Figure 2: Network diagram of neural network with labels and weights labeled.
 
