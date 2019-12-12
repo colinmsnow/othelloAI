@@ -1,4 +1,7 @@
 /*
+Adapted by Colin Snow and Meg Ku for use with RL algorithms
+
+Originally authored by:
 Beginning C, Third Edition
  By Ivor Horton
  ISBN: 1-59059-253-0
@@ -37,14 +40,6 @@ void main()
   int player = 0;                   /* Player indicator    */
   int a;
   int b;
-
-//    printf("\nREVERSI\n\n");
-//   printf("You can go first on the first game, then we will take turns.\n");
-//   printf("   You will be white - (O)\n   I will be black   - (@).\n");
-//   printf("Select a square for your move by typing a digit for the row\n "
-//     "and a letter for the column with no spaces between.\n");
-//   printf("\nGood luck!  Press Enter to start.\n");
-//   scanf("%c", &again);
 
    /* Prompt for how to play - as before */
 
@@ -91,22 +86,10 @@ void main()
              x--;                          /* Convert to row index    */
              if( x>=0 && y>=0 && x<SIZE && y<SIZE && moves[x][y])
              {
-            //    for (int i=0; i<SIZE;i++){
-            //      for (int j=0; j<SIZE;j++){
-            //        if (moves[i][j] == 1){
-            //          printf( "(%d, %d)\n", i, j);
-            //        }
-            //     //  printf( "%d\n", moves[i][j]);
-            //      }
-            //    }
-              //  printf( "%d\n", moves[x][y]);
+
                make_move(board, x, y, 'O');
-            //   make_move(board, a, b, 'O');
                no_of_moves++;              /* Increment move count */
                break;
-            //  }
-            //  else
-            //    printf("Not a valid move, try again.\n");
           }
          }
          }
@@ -160,61 +143,15 @@ void main()
    printf("\nGoodbye\n"); 
 }
 
-/***********************************************
- * Function to display the board in it's       *
- * current state with row numbers and column   *
- * letters to identify squares.                *
- * Parameter is the board array.               *
- ***********************************************/
-// void display(char board[][SIZE])
-// {
-//    int row  = 0;          /* Row index      */
-//    int col = 0;           /* Column index   */
-//    char col_label = 'a';  /* Column label   */
-
-//    printf("\n ");         /* Start top line */
-//    for(col = 0 ; col<SIZE ;col++)
-//      printf("   %c", col_label+col); /* Display the top line */
-//    printf("\n");                     /* End the top line     */
-
-//    /* Display the intermediate rows */  
-//    for(row = 0; row < SIZE; row++)
-//    {
-//      printf("  +");
-//      for(col = 0; col<SIZE; col++)
-//        printf("---+");
-//      printf("\n%2d|",row + 1); 
-
-//      for(col = 0; col<SIZE; col++)
-//        printf(" %c |", board[row][col]);  /* Display counters in row */
-//       // printf(" %c", board[row][col]);  /* Display counters in row */
-//      printf("\n");    
-//    }
-
-//   //  printf("  +");                  /* Start the bottom line   */
-//   //  for(col = 0 ; col<SIZE ;col++)
-//   //    printf("---+");               /* Display the bottom line */
-//   //  printf("\n");                   /* End the bottom  line    */
-// }
-
 void display(char board[][SIZE])
 {
    int row  = 0;          /* Row index      */
    int col = 0;           /* Column index   */
    char col_label = 'a';  /* Column label   */
 
-  //  printf("\n ");         /* Start top line */
-  //  for(col = 0 ; col<SIZE ;col++)
-  //    printf("   %c", col_label+col); /* Display the top line */
-  //  printf("\n");                     /* End the top line     */
-
    /* Display the intermediate rows */  
    for(row = 0; row < SIZE; row++)
    {
-    //  printf("  +");
-    //  for(col = 0; col<SIZE; col++)
-    //    printf("---+");
-    //  printf("\n%2d|",row + 1); 
 
      for(col = 0; col<SIZE; col++)
      {
@@ -226,18 +163,10 @@ void display(char board[][SIZE])
       }
       if (board[row][col] == 64){
         printf("-1");
-      }
-       /* Display counters in row */
-      // printf(" %c", board[row][col]);  /* Display counters in row */
-    //  printf("\n");    
+      } 
      }
    }
    printf("\n");
-
-  //  printf("  +");                  /* Start the bottom line   */
-  //  for(col = 0 ; col<SIZE ;col++)
-  //    printf("---+");               /* Display the bottom line */
-  //  printf("\n");                   /* End the bottom  line    */
 }
 
 /***********************************************
@@ -509,14 +438,3 @@ void make_move(char board[][SIZE], int row, int col, char player)
        }
      }
 }
-
-// int createRandom(int lower, int upper,  
-//                              int count) 
-// { 
-//     int i; 
-//     for (i = 0; i < count; i++) { 
-//         int num = (rand() % 
-//            (upper - lower + 1)) + lower; 
-//         return num;
-//     } 
-// } 

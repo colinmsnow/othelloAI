@@ -1,4 +1,7 @@
 /*
+Adapted by Colin Snow and Meg Ku for use with RL algorithms
+
+Originally authored by:
 Beginning C, Third Edition
  By Ivor Horton
  ISBN: 1-59059-253-0

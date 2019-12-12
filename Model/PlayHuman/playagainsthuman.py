@@ -1,4 +1,6 @@
-
+''' Implementation of our model to allow humans to play against the network.
+Running this file will create an interactive command-line game which faces
+you against our trained model '''
 import sys
 sys.path.append(".")
 
@@ -32,6 +34,7 @@ env = playhuman.Move() #Othello game
 
 
 class bcolors:
+    ''' Use command-line colors'''
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -56,7 +59,7 @@ Transition = namedtuple('Transition',
 
 
 class DQN(nn.Module):
-
+    ''' Define size of neural net '''
     def __init__(self, h, w, outputs):
         super(DQN, self).__init__()
         self.conv1 = nn.Conv2d(1, 256, kernel_size=2, stride=1, padding=1)
@@ -64,11 +67,7 @@ class DQN(nn.Module):
         self.fcl1 = nn.Linear(20736,10000)
         self.fcl2 = nn.Linear(10000, 64)
 
-
-    # Called with either one element to determine next action, or a batch
-    # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-
 
         x = F.relu(self.bn1(self.conv1(x)))
         x = x.view(-1, 20736)
@@ -112,11 +111,8 @@ def select_action(state, env):
     we want it to select the max of the board, and not proceed until it chooses one of the available ones """
 
     with torch.no_grad():
-        # t.max(1) will return largest column value of each row.
-        # second column on max result is index of where max element was
-        # found, so we pick action with the larger expected reward.
+
         policynet = policy_net(state)
-        # print(policynet)
         possibleMoves = env.state()[2]
 
         possiblepolicy = torch.tensor([policynet[0][i] for i in possibleMoves])
@@ -131,8 +127,6 @@ def select_action(state, env):
             return torch.tensor([[random.choice(env.state()[2])]], device=device, dtype=torch.long)
         else:
             policymax = np.random.choice(64, p=policynet)
-            # policymax = np.argmax(policynet)
-            # print(policymax)
         
         if policymax in possibleMoves:
             return torch.tensor([[policymax]], device=device, dtype=torch.long)

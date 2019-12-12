@@ -6,17 +6,11 @@ import random
 import numpy as np
 import math
 
-
-# To import:
-
-# import sys
-# sys.path.append(".")
-# from cothelloago import crunner
-# game = crunner.Move() #Othello game
-
 class Move:
+    ''' Makes a move based on the given player '''
 
     def __init__ (self):
+        ''' Creates an empty board '''
         self.board = "                           O@      @O                           \n"
         self.result = []
         # self.moves = ['3e', '4f', '5c', '6d']
@@ -27,6 +21,7 @@ class Move:
         self.boardArray = self.board_array()
     
     def reset(self):
+        ''' Resets the game '''
         self.board = "                           O@      @O                           \n"
         self.result = []
         # self.moves = ['3e', '4f', '5c', '6d']
@@ -37,6 +32,7 @@ class Move:
         self.boardArray = self.board_array()
 
     def output_reader(self, proc):
+        ''' Reads output from c program '''
         self.result = []
         while 1:
             line = proc.stdout.readline()
@@ -75,6 +71,7 @@ class Move:
         return (self.boardArray, self.board, self.moves, self.score, self.over)
 
     def board_array(self):
+        ''' Creates numpy array of board '''
         boardArray = np.empty([8,8])
         count = 0
         numboard = [None] * 64
