@@ -70,7 +70,7 @@ void main()
            if(++invalid_moves<2)
            {
              fflush(stdin);
-             printf("\npass");
+            //  printf("\npass");
             //  scanf("%c", &again);
            }
            else
@@ -80,26 +80,25 @@ void main()
         // computer turn
         /* It is the computer's turn                    */
 
-        do
-          if(valid_moves(board, moves, '@')) /* Check for valid moves */
-          {
-          invalid_moves = 0;               /* Reset invalid count   */
-        //   computer_move(board, moves, '@');
-          no_of_moves++;                   /* Increment move count  */
-          }
-          else
-          {
-          if(++invalid_moves<2)
-              over = 0;
-              // printf("\nI have to pass, your go\n"); /* No valid move */
-          else
-              // printf("\nNeither of us can go, so the game is over.\n");
-              over = 1;
-          }
-        while(!valid_moves(board, moves, 'O') && over == 0);
+        // do
+        //   if(valid_moves(board, moves, '@')) /* Check for valid moves */
+        //   {
+        //   invalid_moves = 0;               /* Reset invalid count   */
+        // //   computer_move(board, moves, '@');
+        //   no_of_moves++;                   /* Increment move count  */
+        //   }
+        //   else
+        //   {
+        //   if(++invalid_moves<2)
+        //       over = 0;
+        //       // printf("\nI have to pass, your go\n"); /* No valid move */
+        //   else
+        //       // printf("\nNeither of us can go, so the game is over.\n");
+        //       over = 1;
+        //   }
+        // while(!valid_moves(board, moves, 'O') && over == 0);
 
-
-
+        valid_moves(board, moves, '@');
 
         display(board);
         for (int i=0; i<SIZE;i++){

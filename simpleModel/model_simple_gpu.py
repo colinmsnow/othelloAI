@@ -262,7 +262,7 @@ target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
 #Define optimizer and learnign rate
-optimizer = optim.Adam(policy_net.parameters(), lr= 1e-8)
+optimizer = optim.Adam(policy_net.parameters(), lr= 1e-10)
 
 #Create a memory object which stores the games played
 memory = ReplayMemory(100000)
@@ -479,7 +479,7 @@ def new_select_action(state, env):
             # # print('possible policy is')
             # # print(possiblepolicy)
             # policynet = np.array([policynet.data.cpu().numpy().flatten()])[0]
-
+            # model 4 batch size 512 target update 20 lr=1e-8 200 games played
             # policynet = [policynet[i] if i in possibleMoves else 0 for i in range(64)]
             # # print(policynet)
             # policynet = np.array(policynet)
