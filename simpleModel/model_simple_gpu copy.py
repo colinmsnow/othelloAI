@@ -126,19 +126,19 @@ class DQN(nn.Module):
 
 
         # #Goldilocks et al. - won 43% (once)
-        # self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
-        # self.bn1   = nn.BatchNorm2d(16)
-        # # self.conv2 = nn.Conv2d(16, 256, kernel_size=3, stride=1, padding=1)
-        # # self.bn2   = nn.BatchNorm2d(256)
-        # self.fc1   = nn.Linear(1024, 512)
-        # self.fc2   = nn.Linear(512, 256)
-        # self.fc3   = nn.Linear(256, 64)
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
+        self.bn1   = nn.BatchNorm2d(16)
+        self.conv2 = nn.Conv2d(16, 256, kernel_size=3, stride=1, padding=1)
+        self.bn2   = nn.BatchNorm2d(256)
+        self.fc1   = nn.Linear(16384, 512)
+        self.fc2   = nn.Linear(512, 256)
+        self.fc3   = nn.Linear(256, 64)
 
 
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=2, stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(64)
-        self.fcl1 = nn.Linear(5184,2000)
-        self.fcl2 = nn.Linear(2000, 64)
+        # self.conv1 = nn.Conv2d(1, 64, kernel_size=2, stride=1, padding=1)
+        # self.bn1 = nn.BatchNorm2d(64)
+        # self.fcl1 = nn.Linear(5184,2000)
+        # self.fcl2 = nn.Linear(2000, 64)
 
         
         # Puny
@@ -176,18 +176,18 @@ class DQN(nn.Module):
         # x = F.relu(self.fcl2(x))
         # x = F.relu(self.fcl3(x))
 
-        x = F.relu(self.bn1(self.conv1(x)))
-        # x = F.relu(self.conv2(x))
-        x = x.view(-1, 5184)
-        x = F.relu(self.fcl1(x))
-        x = F.relu(self.fcl2(x))
-
         # x = F.relu(self.bn1(self.conv1(x)))
-        # # x = F.relu(self.bn2(self.conv2(x)))
-        # x = x.view(-1, 1024)
-        # x = F.relu(self.fc1(x))
-        # x = F.relu(self.fc2(x))
-        # x = F.relu(self.fc3(x))
+        # # x = F.relu(self.conv2(x))
+        # x = x.view(-1, 5184)
+        # x = F.relu(self.fcl1(x))
+        # x = F.relu(self.fcl2(x))
+
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = x.view(-1, 16384)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
 
         # x = F.relu(self.bn1(self.conv1(x)))
         # x = x.view(-1, 1296)
